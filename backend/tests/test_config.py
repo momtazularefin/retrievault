@@ -1,4 +1,3 @@
-import os
 from retrievault.config import get_settings
 
 def test_config_loads_defaults():

@@ -6,6 +6,8 @@ __pycache__/
 venv/
 ENV/
 .env
+manifest.json
+backend/manifest.json
 
 # Node
 node_modules/
