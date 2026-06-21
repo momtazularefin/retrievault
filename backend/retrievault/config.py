@@ -1,3 +1,4 @@
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
@@ -24,7 +25,11 @@ class Settings(BaseSettings):
     sparse_model: str = "Qdrant/bm25"
     rerank_model: str = "BAAI/bge-reranker-base"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=os.path.join(os.path.dirname(__file__), "../../.env"), 
+        env_file_encoding="utf-8", 
+        extra="ignore"
+    )
 
 @lru_cache
 def get_settings() -> Settings:

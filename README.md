@@ -1,6 +1,8 @@
 # retrievault
 
-Production-grade RAG service for the FastAPI codebase. Features native hybrid search (Qdrant BM25/BGE) and agentic citation validation.
+Production-grade RAG service for the FastAPI codebase: native hybrid search (Qdrant BM25 + BGE) with reranking and agentic, citation-validated answers.
+
+> Status: work in progress. **Done locally — M0 scaffold, M1 backend/health, M2 ingestion, M3 hybrid retrieval, M4 reranking.** Next — M5 synthesis + citations, then `/query`, frontend, eval, deploy.
 
 ## Architecture
 - **Corpus**: `fastapi/fastapi` @ 0.136.3
