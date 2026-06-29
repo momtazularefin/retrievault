@@ -25,7 +25,10 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "httpx",
-    "ruff"
+    "ruff",
+    "ragas",
+    "datasets",
+    "langchain-anthropic"
 ]
 
 [tool.hatch.build.targets.wheel]
