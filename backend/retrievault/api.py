@@ -1,9 +1,15 @@
 import json
+import time
 from pathlib import Path
+from typing import List, Dict, Any
 
 from fastapi import FastAPI
+from pydantic import BaseModel
 from qdrant_client import QdrantClient
 from retrievault.config import get_settings
+from retrievault.retrieve.hybrid_search import HybridSearcher
+from retrievault.rerank.reranker import rerank
+from retrievault.synthesize.graph import build_graph
 
 app = FastAPI(title="retrievault API")
 
@@ -42,13 +48,6 @@ def health_check():
         "model": settings.retrievault_synthesis_model,
         "corpus": corpus_manifest
     }
-
-import time
-from typing import List, Dict, Any
-from pydantic import BaseModel
-from retrievault.retrieve.hybrid_search import HybridSearcher
-from retrievault.rerank.reranker import rerank
-from retrievault.synthesize.graph import build_graph
 
 class QueryRequest(BaseModel):
     query: str
