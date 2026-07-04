@@ -34,7 +34,9 @@ def extract_and_validate_citations(answer: str, chunks: List[Dict[str, Any]]) ->
                 "start_line": start_line,
                 "end_line": end_line,
                 "symbol_name": c.get("symbol_name", ""),
-                "github_url": github_url
+                "symbol_type": c.get("symbol_type", ""),
+                "github_url": github_url,
+                "snippet": c.get("code", ""),
             })
         else:
             hallucinated.append(match)

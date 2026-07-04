@@ -6,7 +6,7 @@ class AnthropicClient:
     def __init__(self):
         settings = get_settings()
         self.client = AsyncAnthropic(api_key=settings.anthropic_api_key)
-        self.model = "claude-3-5-sonnet-20240620" if settings.retrievault_synthesis_model == "claude-sonnet-4-6" else settings.retrievault_synthesis_model
+        self.model = settings.retrievault_synthesis_model
 
     async def generate(self, system_prompt: str, messages: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
@@ -21,12 +21,20 @@ class AnthropicClient:
         response = await self.client.messages.create(
             model=self.model,
             max_tokens=1024,
-            system=system_prompt,
+            system=[
+                {
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"}
+                }
+            ],
             messages=anthropic_msgs,
             temperature=0.0
         )
         return {
             "content": response.content[0].text,
             "input_tokens": response.usage.input_tokens,
-            "output_tokens": response.usage.output_tokens
+            "output_tokens": response.usage.output_tokens,
+            "cache_creation_input_tokens": response.usage.cache_creation_input_tokens or 0,
+            "cache_read_input_tokens": response.usage.cache_read_input_tokens or 0,
         }

@@ -15,3 +15,22 @@ node_modules/
 out/
 build/
 .DS_Store
+
+# IDEs
+.idea/
+*.iml
+
+# Cache & Local databases
+*.db
+*.sqlite
+backend/eval/.cache_responses.json
+
+# Generated ML/runtime artifacts
+backend/models/
+backend/scratch/
+backend/.cache/
+*.onnx
+*.onnx.data
+*.safetensors
+*.pt
+*.pth

@@ -13,7 +13,8 @@ def build_system_prompt(chunks: List[Dict[str, Any]]) -> str:
         "CRITICAL INSTRUCTIONS FOR CITATIONS:\n"
         "1. Every factual claim or reference to code MUST be cited using the exact label of the chunk (e.g., [S1], [S2]).\n"
         "2. Do NOT hallucinate citations. You may only use labels that appear below.\n"
-        "3. Place the citation at the end of the relevant sentence.\n\n"
+        "3. Place the citation at the end of the relevant sentence.\n"
+        "4. If you refuse to answer because the context does not contain the answer, you MUST NOT include any citations in your response.\n\n"
         "--- SOURCE CHUNKS ---\n\n"
     )
     

@@ -14,7 +14,15 @@ def test_build_system_prompt():
 
 def test_extract_and_validate_citations_valid():
     chunks = [
-        {"citation_label": "[S1]", "file_path": "a.py", "start_line": 1, "end_line": 10}
+        {
+            "citation_label": "[S1]",
+            "file_path": "a.py",
+            "symbol_name": "foo",
+            "symbol_type": "function",
+            "start_line": 1,
+            "end_line": 10,
+            "code": "def foo(): pass",
+        }
     ]
     answer = "This is the answer [S1]."
     citations, err = extract_and_validate_citations(answer, chunks)
@@ -22,6 +30,9 @@ def test_extract_and_validate_citations_valid():
     assert len(citations) == 1
     assert citations[0]["label"] == "[S1]"
     assert citations[0]["file_path"] == "a.py"
+    assert citations[0]["symbol_name"] == "foo"
+    assert citations[0]["symbol_type"] == "function"
+    assert citations[0]["snippet"] == "def foo(): pass"
 
 def test_extract_and_validate_citations_hallucinated():
     chunks = [

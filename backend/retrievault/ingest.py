@@ -13,6 +13,7 @@ from qdrant_client.http.models import Distance, VectorParams, SparseVectorParams
 from retrievault.collection import COLLECTION_NAME
 from retrievault.config import get_settings
 from retrievault.chunker import chunk_file, Chunk
+from retrievault.retrieve.query_encoder import get_onnx_providers
 
 def download_and_extract_corpus(repo: str, tag: str, extract_dir: str):
     # e.g., fastapi/fastapi -> https://github.com/fastapi/fastapi/archive/refs/tags/0.136.3.tar.gz
@@ -24,7 +25,7 @@ def download_and_extract_corpus(repo: str, tag: str, extract_dir: str):
     
     print("Extracting corpus...")
     with tarfile.open(tar_path, "r:gz") as tar:
-        tar.extractall(path=extract_dir)
+        tar.extractall(path=extract_dir, filter="data")
         
     # The extracted folder is usually something like fastapi-0.136.3
     repo_name = repo.split('/')[-1]
@@ -47,8 +48,9 @@ def ingest():
     settings = get_settings()
     
     print("Loading fastembed models...")
-    dense_model = TextEmbedding(model_name=settings.embed_model)
-    sparse_model = SparseTextEmbedding(model_name=settings.sparse_model)
+    providers = get_onnx_providers(settings.execution_device)
+    dense_model = TextEmbedding(model_name=settings.embed_model, providers=providers)
+    sparse_model = SparseTextEmbedding(model_name=settings.sparse_model, providers=providers)
     
     print("Connecting to Qdrant...")
     client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)

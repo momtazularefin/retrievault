@@ -4,12 +4,15 @@ import uuid
 import random
 from qdrant_client import QdrantClient
 from anthropic import Anthropic
+from retrievault.collection import COLLECTION_NAME
+from retrievault.config import get_settings
 
 def generate():
-    qdrant = QdrantClient("http://localhost:6333")
-    anthropic = Anthropic()
+    settings = get_settings()
+    qdrant = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)
+    anthropic = Anthropic(api_key=settings.anthropic_api_key)
     
-    collection_name = "retrievault_chunks"
+    collection_name = COLLECTION_NAME
     try:
         count = qdrant.count(collection_name).count
         print(f"Index has {count} chunks")
@@ -64,7 +67,7 @@ def generate():
         """
         
         resp = anthropic.messages.create(
-            model="claude-3-5-sonnet-latest",
+            model=settings.retrievault_synthesis_model,
             max_tokens=1000,
             system="You are an expert developer. Output raw JSON list.",
             messages=[{"role": "user", "content": prompt}]

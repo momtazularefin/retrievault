@@ -38,7 +38,10 @@ def test_query_endpoint(monkeypatch):
     monkeypatch.setattr("retrievault.api.get_searcher", lambda: MockSearcher())
     
     # Mock reranker
-    monkeypatch.setattr("retrievault.api.rerank", lambda q, chunks: chunks)
+    def mock_rerank(query, chunks, top_k=None):
+        return chunks[:top_k]
+
+    monkeypatch.setattr("retrievault.api.rerank", mock_rerank)
     
     # Mock LangGraph
     class MockGraph:
@@ -53,7 +56,7 @@ def test_query_endpoint(monkeypatch):
     monkeypatch.setattr("retrievault.api.get_graph", lambda: MockGraph())
     
     # Make the request
-    response = client.post("/query", json={"query": "What is foo?"})
+    response = client.post("/query", json={"question": "What is foo?", "top_k": 1})
     assert response.status_code == 200
     
     data = response.json()
@@ -65,5 +68,24 @@ def test_query_endpoint(monkeypatch):
     assert meta["tokens"]["output"] == 50
     assert "latency_ms" in meta
     assert "total" in meta["latency_ms"]
+    assert meta["model"] == "claude-sonnet-4-6"
     assert meta["retrieved_chunk_ids"] == ["123"]
     assert meta["est_cost_usd"] > 0.001
+
+
+def test_query_endpoint_accepts_legacy_query_field(monkeypatch):
+    class MockSearcher:
+        def search(self, query):
+            assert query == "What is foo?"
+            return []
+
+    class MockGraph:
+        async def ainvoke(self, state):
+            return {"answer": "No context.", "citations": []}
+
+    monkeypatch.setattr("retrievault.api.get_searcher", lambda: MockSearcher())
+    monkeypatch.setattr("retrievault.api.rerank", lambda q, chunks, top_k=None: chunks)
+    monkeypatch.setattr("retrievault.api.get_graph", lambda: MockGraph())
+
+    response = client.post("/query", json={"query": "What is foo?"})
+    assert response.status_code == 200
