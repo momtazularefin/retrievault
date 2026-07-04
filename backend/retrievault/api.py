@@ -52,7 +52,7 @@ def health_check():
     # Try pinging Qdrant
     qdrant_ok = False
     try:
-        client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)
+        client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key_or_none)
         # Check if we can get collections as a ping
         client.get_collections()
         qdrant_ok = True

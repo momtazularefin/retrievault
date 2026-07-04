@@ -31,7 +31,8 @@ class HybridSearcher:
     ):
         settings = get_settings()
         self._client = client or QdrantClient(
-            url=settings.qdrant_url, api_key=settings.qdrant_api_key
+            url=settings.qdrant_url,
+            api_key=settings.qdrant_api_key_or_none,
         )
         self._encoder = encoder or QueryEncoder()
         self._collection = collection_name

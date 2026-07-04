@@ -1,9 +1,28 @@
 from fastapi.testclient import TestClient
+import pytest
+
 from retrievault.api import app
+from retrievault.config import Settings
 
-client = TestClient(app)
 
-def test_health_check_returns_schema():
+@pytest.fixture
+def client(monkeypatch):
+    test_settings = Settings(_env_file=None)
+    monkeypatch.setattr("retrievault.api.get_settings", lambda: test_settings)
+    return TestClient(app)
+
+
+def test_health_check_returns_schema(client, monkeypatch):
+    class MockQdrantClient:
+        def __init__(self, url, api_key):
+            assert url == "http://localhost:6333"
+            assert api_key is None
+
+        def get_collections(self):
+            return []
+
+    monkeypatch.setattr("retrievault.api.QdrantClient", MockQdrantClient)
+
     response = client.get("/health")
     assert response.status_code == 200
     data = response.json()
@@ -13,11 +32,13 @@ def test_health_check_returns_schema():
     assert "model" in data
     assert "corpus" in data
     
+    assert data["qdrant"] is True
     assert data["model"] == "claude-sonnet-4-6"
     assert data["corpus"]["repo"] == "fastapi/fastapi"
     assert data["corpus"]["commit_tag"] == "0.136.3"
 
-def test_query_endpoint(monkeypatch):
+
+def test_query_endpoint(client, monkeypatch):
     # Mock searcher
     class MockSearcher:
         def search(self, query):
@@ -62,7 +83,7 @@ def test_query_endpoint(monkeypatch):
     data = response.json()
     assert data["answer"] == "This is a mocked answer."
     assert len(data["citations"]) == 1
-    
+
     meta = data["metadata"]
     assert meta["tokens"]["input"] == 100
     assert meta["tokens"]["output"] == 50
@@ -73,7 +94,7 @@ def test_query_endpoint(monkeypatch):
     assert meta["est_cost_usd"] > 0.001
 
 
-def test_query_endpoint_accepts_legacy_query_field(monkeypatch):
+def test_query_endpoint_accepts_legacy_query_field(client, monkeypatch):
     class MockSearcher:
         def search(self, query):
             assert query == "What is foo?"

@@ -53,7 +53,7 @@ def ingest():
     sparse_model = SparseTextEmbedding(model_name=settings.sparse_model, providers=providers)
     
     print("Connecting to Qdrant...")
-    client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)
+    client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key_or_none)
     
     collection_name = COLLECTION_NAME
     

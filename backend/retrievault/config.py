@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     rerank_model_dir: str = "models/bge-reranker-onnx"
     execution_device: str = "cpu"  # "cpu", "gpu", or "npu"
 
+    @property
+    def qdrant_api_key_or_none(self) -> str | None:
+        return self.qdrant_api_key.strip() or None
+
 
     # Eval defaults support clean CI/local imports without requiring `.env`.
     # The eval runner still validates provider-specific API keys before judging.
