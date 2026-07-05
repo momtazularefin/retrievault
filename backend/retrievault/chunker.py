@@ -1,8 +1,26 @@
 import ast
 from typing import List
 
+
+PREAMBLE_NODE_TYPES = (
+    ast.Import,
+    ast.ImportFrom,
+    ast.Assign,
+    ast.AnnAssign,
+    ast.TypeAlias,
+)
+
+
 class Chunk:
-    def __init__(self, file_path: str, symbol_name: str, symbol_type: str, start_line: int, end_line: int, code: str):
+    def __init__(
+        self,
+        file_path: str,
+        symbol_name: str,
+        symbol_type: str,
+        start_line: int,
+        end_line: int,
+        code: str,
+    ):
         self.file_path = file_path
         self.symbol_name = symbol_name
         self.symbol_type = symbol_type
@@ -18,13 +36,15 @@ class Chunk:
             "start_line": self.start_line,
             "end_line": self.end_line,
             "code": self.code,
-            "language": "python"
+            "language": "python",
         }
+
 
 def get_node_source(node: ast.AST, source_lines: List[str]) -> str:
     start_lineno = node.lineno - 1
     end_lineno = node.end_lineno
     return "\n".join(source_lines[start_lineno:end_lineno])
+
 
 def chunk_file(file_path: str, repo_relative_path: str, content: str) -> List[Chunk]:
     chunks = []
@@ -34,45 +54,53 @@ def chunk_file(file_path: str, repo_relative_path: str, content: str) -> List[Ch
         return chunks
 
     source_lines = content.splitlines()
-    
-    # Extract preamble: imports, module docstring, assignments
+
+    # Extract preamble: imports, module docstring, assignments, and type aliases
     preamble_lines = []
     preamble_end_line = 0
     for node in tree.body:
-        if isinstance(node, (ast.Import, ast.ImportFrom, ast.Assign, ast.AnnAssign)):
+        if isinstance(node, PREAMBLE_NODE_TYPES):
             preamble_lines.append(get_node_source(node, source_lines))
-            preamble_end_line = max(preamble_end_line, getattr(node, 'end_lineno', 0))
-        elif isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+            preamble_end_line = max(preamble_end_line, getattr(node, "end_lineno", 0))
+        elif (
+            isinstance(node, ast.Expr)
+            and isinstance(node.value, ast.Constant)
+            and isinstance(node.value.value, str)
+        ):
             # Module docstring
             preamble_lines.append(get_node_source(node, source_lines))
-            preamble_end_line = max(preamble_end_line, getattr(node, 'end_lineno', 0))
+            preamble_end_line = max(preamble_end_line, getattr(node, "end_lineno", 0))
 
     if preamble_lines:
         code = "\n".join(preamble_lines)
-        chunks.append(Chunk(
-            file_path=repo_relative_path,
-            symbol_name="__module_preamble__",
-            symbol_type="module",
-            start_line=1,
-            end_line=preamble_end_line,
-            code=code
-        ))
+        chunks.append(
+            Chunk(
+                file_path=repo_relative_path,
+                symbol_name="__module_preamble__",
+                symbol_type="module",
+                start_line=1,
+                end_line=preamble_end_line,
+                code=code,
+            )
+        )
 
     # Extract functions and classes
     for node in tree.body:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             code = get_node_source(node, source_lines)
-            chunks.append(Chunk(
-                file_path=repo_relative_path,
-                symbol_name=node.name,
-                symbol_type="function",
-                start_line=node.lineno,
-                end_line=node.end_lineno,
-                code=code
-            ))
+            chunks.append(
+                Chunk(
+                    file_path=repo_relative_path,
+                    symbol_name=node.name,
+                    symbol_type="function",
+                    start_line=node.lineno,
+                    end_line=node.end_lineno,
+                    code=code,
+                )
+            )
         elif isinstance(node, ast.ClassDef):
             # Check if class is "large" -> heuristic: > 100 lines or has many methods
-            class_lines = node.end_lineno - node.lineno
+            class_lines = node.end_lineno - node.lineno + 1
             if class_lines > 100:
                 # Split by method
                 class_header = source_lines[node.lineno - 1]
@@ -82,24 +110,28 @@ def chunk_file(file_path: str, repo_relative_path: str, content: str) -> List[Ch
                         # Prepend the real class header for context; the method source keeps
                         # its own indentation, so no manual re-indentation is needed.
                         code = f"{class_header}\n{method_code}"
-                        chunks.append(Chunk(
-                            file_path=repo_relative_path,
-                            symbol_name=f"{node.name}.{subnode.name}",
-                            symbol_type="method",
-                            start_line=subnode.lineno,
-                            end_line=subnode.end_lineno,
-                            code=code
-                        ))
+                        chunks.append(
+                            Chunk(
+                                file_path=repo_relative_path,
+                                symbol_name=f"{node.name}.{subnode.name}",
+                                symbol_type="method",
+                                start_line=node.lineno,
+                                end_line=subnode.end_lineno,
+                                code=code,
+                            )
+                        )
             else:
                 # Small class, keep whole
                 code = get_node_source(node, source_lines)
-                chunks.append(Chunk(
-                    file_path=repo_relative_path,
-                    symbol_name=node.name,
-                    symbol_type="class",
-                    start_line=node.lineno,
-                    end_line=node.end_lineno,
-                    code=code
-                ))
+                chunks.append(
+                    Chunk(
+                        file_path=repo_relative_path,
+                        symbol_name=node.name,
+                        symbol_type="class",
+                        start_line=node.lineno,
+                        end_line=node.end_lineno,
+                        code=code,
+                    )
+                )
 
     return chunks

@@ -24,6 +24,25 @@ class Settings(BaseSettings):
     embed_model: str = "BAAI/bge-base-en-v1.5"
     sparse_model: str = "Qdrant/bm25"
     rerank_model: str = "BAAI/bge-reranker-base"
+    rerank_model_dir: str = "models/bge-reranker-onnx"
+    acceleration: str = "none"  # "none", "gpu", or "npu"
+
+    @property
+    def qdrant_api_key_or_none(self) -> str | None:
+        return self.qdrant_api_key.strip() or None
+
+
+    # Eval defaults support clean CI/local imports without requiring `.env`.
+    # The eval runner still validates provider-specific API keys before judging.
+    eval_good_count: int = 3
+    eval_refusal_count: int = 2
+    eval_use_response_cache: bool = False
+    eval_use_judge_cache: bool = False
+    eval_max_workers: int = 30
+    eval_concurrent_queries: int = 5
+    eval_judge_provider: str = "claude"
+    eval_judge_model: str = "claude-haiku-4-5-20251001"
+    openai_api_key: str = ""
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(__file__), "../../.env"), 

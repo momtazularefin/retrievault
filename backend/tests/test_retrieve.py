@@ -5,6 +5,15 @@ from qdrant_client.http import models
 
 from retrievault.retrieve.hybrid_search import HybridSearcher
 from retrievault.retrieve.query_encoder import EncodedQuery, QueryEncoder
+from retrievault.config import get_settings
+
+
+@pytest.fixture(autouse=True)
+def force_no_acceleration(monkeypatch):
+    monkeypatch.setenv("ACCELERATION", "none")
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
 
 
 def test_encoded_query_has_expected_shapes():

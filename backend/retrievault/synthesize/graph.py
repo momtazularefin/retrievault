@@ -16,6 +16,8 @@ class GraphState(TypedDict):
     retries: int
     input_tokens: int
     output_tokens: int
+    cache_creation_input_tokens: int
+    cache_read_input_tokens: int
 
 # Initialize a global client or fetch on demand
 _client = None
@@ -43,12 +45,16 @@ async def synthesize_node(state: GraphState):
     
     current_input = state.get("input_tokens", 0)
     current_output = state.get("output_tokens", 0)
+    current_cache_create = state.get("cache_creation_input_tokens", 0)
+    current_cache_read = state.get("cache_read_input_tokens", 0)
     
     return {
         "messages": [new_message],
         "answer": response["content"],
         "input_tokens": current_input + response["input_tokens"],
-        "output_tokens": current_output + response["output_tokens"]
+        "output_tokens": current_output + response["output_tokens"],
+        "cache_creation_input_tokens": current_cache_create + response.get("cache_creation_input_tokens", 0),
+        "cache_read_input_tokens": current_cache_read + response.get("cache_read_input_tokens", 0),
     }
 
 async def validate_node(state: GraphState):
