@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     sparse_model: str = "Qdrant/bm25"
     rerank_model: str = "BAAI/bge-reranker-base"
     rerank_model_dir: str = "models/bge-reranker-onnx"
-    execution_device: str = "cpu"  # "cpu", "gpu", or "npu"
+    acceleration: str = "none"  # "none", "gpu", or "npu"
 
     @property
     def qdrant_api_key_or_none(self) -> str | None:

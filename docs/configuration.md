@@ -31,7 +31,7 @@ This document describes all environment variables used to configure the Retrieva
 | `TOP_N_FUSION` | `int` | `30` | Number of unified candidates merged during Reciprocal Rank Fusion. |
 | `TOP_K_RERANK` | `int` | `6` | Number of final chunks passed to Claude after Cross-Encoder reranking. |
 | `RERANK_MODEL_DIR` | `str` | `models/bge-reranker-onnx` | Local ONNX reranker export/cache directory, resolved relative to `backend/` when not absolute. The directory is generated and ignored by git. |
-| `EXECUTION_DEVICE` | `str` | `cpu` | ONNX Runtime provider target for fastembed and the ONNX reranker. Allowed values: `cpu`, `gpu`, `npu`. |
+| `ACCELERATION` | `str` | `none` | Hardware acceleration for fastembed and the ONNX reranker. `none` = CPU only, `gpu` = GPU (strict), `npu` = NPU (strict). No silent fallback. |
 
 ---
 

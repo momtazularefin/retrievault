@@ -9,8 +9,8 @@ from retrievault.config import get_settings
 
 
 @pytest.fixture(autouse=True)
-def force_cpu_execution_device(monkeypatch):
-    monkeypatch.setenv("EXECUTION_DEVICE", "cpu")
+def force_no_acceleration(monkeypatch):
+    monkeypatch.setenv("ACCELERATION", "none")
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()

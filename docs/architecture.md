@@ -55,7 +55,7 @@ For any query, Retrievault performs a dual-retrieval query to ensure both semant
 After Rank Fusion, the top candidates (configured by `PREFETCH_LIMIT` and `TOP_N_FUSION`) are passed to a local Cross-Encoder reranker (`BAAI/bge-reranker-base`):
 * Unlike Bi-Encoders, the Cross-Encoder processes the query and the code chunk together, calculating an attention-based relevance score.
 * Reranking filters the fused list down to the final `TOP_K_RERANK` (default: 6) chunks passed to the LLM.
-* The reranker runs through ONNX Runtime. `EXECUTION_DEVICE` selects CPU, GPU, or NPU provider lists and raises if the requested provider is unavailable.
+* The reranker runs through ONNX Runtime. `ACCELERATION` controls hardware acceleration (`none` for CPU-only, `gpu`, or `npu`). When `gpu` or `npu` is selected and the required provider is unavailable, the system raises — there is no silent fallback.
 * The ONNX export/cache directory is controlled by `RERANK_MODEL_DIR` and is generated locally. It must stay out of git.
 
 ---

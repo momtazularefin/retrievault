@@ -6,35 +6,35 @@ from fastembed import SparseTextEmbedding, TextEmbedding
 from retrievault.config import get_settings
 
 
-def get_onnx_providers(execution_device: str) -> list[str]:
+def get_onnx_providers(acceleration: str) -> list[str]:
     available = ort.get_available_providers()
-    device = execution_device.lower()
+    mode = acceleration.lower()
     
-    if device == "cpu":
+    if mode == "none":
         return ["CPUExecutionProvider"]
         
-    elif device == "gpu":
+    elif mode == "gpu":
         gpu_providers = [p for p in ["CUDAExecutionProvider", "DirectMLExecutionProvider", "DmlExecutionProvider", "ROCMExecutionProvider"] if p in available]
         if not gpu_providers:
             raise RuntimeError(
-                f"GPU execution requested, but no GPU provider (CUDA, DirectML, ROCm) "
+                f"GPU acceleration requested, but no GPU provider (CUDA, DirectML, ROCm) "
                 f"is available in ONNX Runtime. Available providers: {available}"
             )
         return gpu_providers
         
-    elif device == "npu":
+    elif mode == "npu":
         npu_providers = [p for p in ["DirectMLExecutionProvider", "DmlExecutionProvider", "VitisAIExecutionProvider"] if p in available]
         if not npu_providers:
             raise RuntimeError(
-                f"NPU execution requested, but no NPU provider (DirectML, VitisAI) "
+                f"NPU acceleration requested, but no NPU provider (DirectML, VitisAI) "
                 f"is available in ONNX Runtime. Available providers: {available}"
             )
         return npu_providers
         
     else:
         raise ValueError(
-            f"Invalid execution_device: '{execution_device}'. "
-            "Must be 'cpu', 'gpu', or 'npu'."
+            f"Invalid ACCELERATION value: '{acceleration}'. "
+            "Must be 'none', 'gpu', or 'npu'."
         )
 
 
@@ -52,7 +52,7 @@ class QueryEncoder:
         sparse_model: SparseTextEmbedding | None = None,
     ):
         settings = get_settings()
-        providers = get_onnx_providers(settings.execution_device)
+        providers = get_onnx_providers(settings.acceleration)
         self._dense = dense_model or TextEmbedding(model_name=settings.embed_model, providers=providers)
         self._sparse = sparse_model or SparseTextEmbedding(model_name=settings.sparse_model, providers=providers)
 

@@ -14,15 +14,15 @@ from retrievault.config import get_settings
 logger = logging.getLogger(__name__)
 
 class ONNXCrossEncoder:
-    def __init__(self, model_dir: str | Path, execution_device: str):
+    def __init__(self, model_dir: str | Path, acceleration: str):
         self.model_dir = str(model_dir)
         self.tokenizer = Tokenizer.from_file(str(Path(model_dir) / "tokenizer.json"))
         self.tokenizer.enable_truncation(max_length=512)
         self.tokenizer.enable_padding()
 
-        # Resolve ONNX providers based on execution_device config
+        # Resolve ONNX providers based on acceleration config
         from retrievault.retrieve.query_encoder import get_onnx_providers
-        providers = get_onnx_providers(execution_device)
+        providers = get_onnx_providers(acceleration)
         logger.info(f"ONNX Reranker loading with execution providers: {providers}")
 
         model_path = os.path.join(self.model_dir, "model.onnx")
@@ -97,7 +97,7 @@ def ensure_onnx_model(model_dir: str | Path | None = None) -> str:
 @lru_cache
 def get_reranker() -> ONNXCrossEncoder:
     settings = get_settings()
-    return ONNXCrossEncoder(ensure_onnx_model(), settings.execution_device)
+    return ONNXCrossEncoder(ensure_onnx_model(), settings.acceleration)
 
 
 def rerank(query: str, chunks: List[Dict[str, Any]], top_k: int | None = None) -> List[Dict[str, Any]]:

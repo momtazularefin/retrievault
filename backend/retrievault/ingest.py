@@ -48,7 +48,7 @@ def ingest():
     settings = get_settings()
     
     print("Loading fastembed models...")
-    providers = get_onnx_providers(settings.execution_device)
+    providers = get_onnx_providers(settings.acceleration)
     dense_model = TextEmbedding(model_name=settings.embed_model, providers=providers)
     sparse_model = SparseTextEmbedding(model_name=settings.sparse_model, providers=providers)
     
