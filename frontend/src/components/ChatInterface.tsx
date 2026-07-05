@@ -220,7 +220,7 @@ export default function ChatInterface() {
               <path d="M12 2L9 9 2 12l7 3 3 7 3-7 7-3-7-3-3-7z" />
             </svg>
             <span className="font-display font-bold text-xl bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
-              retrievault
+              RetrieVault
             </span>
           </button>
 
@@ -284,7 +284,7 @@ export default function ChatInterface() {
               <path d="M12 2L9 9 2 12l7 3 3 7 3-7 7-3-7-3-3-7z" />
             </svg>
             <span className="font-display font-bold text-lg bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
-              retrievault
+              RetrieVault
             </span>
           </button>
           <div className="hidden md:flex items-center gap-2 text-xs font-semibold tracking-wider text-slate-500 uppercase">

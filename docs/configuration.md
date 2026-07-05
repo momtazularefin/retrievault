@@ -1,6 +1,6 @@
-# Retrievault Configuration Guide
+# RetrieVault Configuration Guide
 
-This document describes all environment variables used to configure the Retrievault API, hybrid search engine, and evaluation suite. All variables are loaded via Pydantic Settings in `retrievault/config.py`.
+This document describes all environment variables used to configure the RetrieVault API, hybrid search engine, and evaluation suite. All variables are loaded via Pydantic Settings in `retrievault/config.py`.
 
 ---
 

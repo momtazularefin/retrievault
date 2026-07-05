@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 STARTUP_TIME = time.time()
 
 def _compute_code_hash() -> str:
-    """Recursively computes a short hash of all Python files in the retrievault codebase."""
+    """Recursively computes a short hash of all Python files in the RetrieVault codebase."""
     hasher = hashlib.sha256()
     root_dir = Path(__file__).parent
     
@@ -35,7 +35,7 @@ def _compute_code_hash() -> str:
 
 BUILD_HASH = _compute_code_hash()
 
-app = FastAPI(title="retrievault API")
+app = FastAPI(title="RetrieVault API")
 
 app.add_middleware(
     CORSMiddleware,

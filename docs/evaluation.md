@@ -1,6 +1,6 @@
-# Retrievault Evaluation Suite Reference
+# RetrieVault Evaluation Suite Reference
 
-This document explains the evaluation suite built for Retrievault in `retrievault/eval.py`. It outlines the dataset, quality metrics, grounding heuristics, caching strategies, and parallelized execution design.
+This document explains the evaluation suite built for RetrieVault in `retrievault/eval.py`. It outlines the dataset, quality metrics, grounding heuristics, caching strategies, and parallelized execution design.
 
 Current status: the latest generated smoke report (`backend/eval/reports/report.md`, 2026-07-03) used 5 queries and `gpt-4o-mini` as judge. Citation validity and refusal correctness passed, but Ragas quality metrics and latency gates failed, so M8/AC4/AC5 are not complete yet.
 
@@ -32,7 +32,7 @@ To prevent long execution wait times, the evaluation script executes all tasks c
 * **Concurrent Grading**: Ragas requests are parallelized using a custom `RunConfig` with `max_workers=EVAL_MAX_WORKERS` (default: 30) to submit grading prompts to the configured judge model concurrently.
 
 ### Latency Amortization under Concurrency
-Running queries concurrently causes them to share CPU/GPU/NPU resources for the ONNX Cross-Encoder reranker, inflating the raw wall-clock duration of individual requests. To represent the single-user equivalent performance under batch load, Retrievault calculates **Amortized Latency** by dividing the raw elapsed query time by the active concurrency factor (`EVAL_CONCURRENT_QUERIES`).
+Running queries concurrently causes them to share CPU/GPU/NPU resources for the ONNX Cross-Encoder reranker, inflating the raw wall-clock duration of individual requests. To represent the single-user equivalent performance under batch load, RetrieVault calculates **Amortized Latency** by dividing the raw elapsed query time by the active concurrency factor (`EVAL_CONCURRENT_QUERIES`).
 
 ---
 

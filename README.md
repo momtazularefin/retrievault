@@ -1,4 +1,4 @@
-# retrievault
+# RetrieVault
 
 Production-grade citation-backed RAG service over the FastAPI codebase.
 
@@ -8,13 +8,13 @@ Production-grade citation-backed RAG service over the FastAPI codebase.
 
 ## What It Does
 
-Retrievault answers natural-language questions about the FastAPI codebase with grounded, citation-backed answers. Every factual claim is bound to exact source files and line ranges that link directly to GitHub. 
+RetrieVault answers natural-language questions about the FastAPI codebase with grounded, citation-backed answers. Every factual claim is bound to exact source files and line ranges that link directly to GitHub.
 
 If a query is out-of-scope or unanswerable from the context, the engine cleanly refuses to answer rather than fabricating code claims or hallucinations.
 
 ## Architecture
 
-Retrievault implements AST-aware python code ingestion, dense + sparse hybrid retrieval with rank fusion, and an agentic validation loop inside LangGraph.
+RetrieVault implements AST-aware Python code ingestion, dense + sparse hybrid retrieval with rank fusion, and an agentic validation loop inside LangGraph.
 
 ```mermaid
 graph TD
@@ -59,7 +59,7 @@ For the report source and metric definitions, see [Evaluation & Benchmarks Refer
 
 For a step-by-step developer setup guide starting from a completely empty laptop, refer to the **[Getting Started & Operations Guide →](docs/getting-started.md)**.
 
-Otherwise, get Retrievault up and running locally in under 5 minutes:
+Otherwise, get RetrieVault up and running locally in under 5 minutes:
 
 ### 1. Clone & Install Dependencies
 Ensure you have `uv` installed, then run:

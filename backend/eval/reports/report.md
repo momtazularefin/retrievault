@@ -1,4 +1,4 @@
-# Retrievault Evaluation Report
+# RetrieVault Evaluation Report
 
 ## Metadata
 * **Corpus**: fastapi/fastapi @ 0.136.3

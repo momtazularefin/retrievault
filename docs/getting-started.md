@@ -1,4 +1,4 @@
-# Retrievault - Getting Started & Developer Operations
+# RetrieVault - Getting Started & Developer Operations
 
 This document provides a comprehensive guide to setting up a clean developer machine from scratch, checking out the code, running the services, and managing local code changes.
 
@@ -6,7 +6,7 @@ This document provides a comprehensive guide to setting up a clean developer mac
 
 ## 1. Environment & Prerequisites Setup
 
-To set up an empty laptop for Retrievault development, install the following core tools:
+To set up an empty laptop for RetrieVault development, install the following core tools:
 
 ### Git
 * **Windows**: Download and install [Git for Windows](https://git-scm.com/download/win).
@@ -26,7 +26,7 @@ Using a Node Version Manager (NVM) allows you to manage node runtime environment
    ```
 
 ### Astral `uv` (Python Dependency & Tool Manager)
-Astral `uv` is the Python package and project manager used by Retrievault. It handles local virtual environments and can **download the correct Python interpreter automatically**. You do NOT need to install Python globally on your machine.
+Astral `uv` is the Python package and project manager used by RetrieVault. It handles local virtual environments and can **download the correct Python interpreter automatically**. You do NOT need to install Python globally on your machine.
 * **Windows (PowerShell)**:
   ```powershell
   powershell -c "irm https://astral.sh/uv/install.ps1 | iex"

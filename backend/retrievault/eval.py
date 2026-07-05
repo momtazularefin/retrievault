@@ -422,7 +422,7 @@ async def run_eval():
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / "report.md"
 
-    report_content = f"""# Retrievault Evaluation Report
+    report_content = f"""# RetrieVault Evaluation Report
 
 ## Metadata
 * **Corpus**: {header.get('corpus_repo')} @ {header.get('corpus_tag')}

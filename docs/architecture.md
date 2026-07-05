@@ -1,12 +1,12 @@
-# Retrievault Architecture & Design
+# RetrieVault Architecture & Design
 
-This document details the core architectural components of Retrievault, explaining the pipelines for ingestion, hybrid retrieval, reranking, and citation-backed synthesis.
+This document details the core architectural components of RetrieVault, explaining the pipelines for ingestion, hybrid retrieval, reranking, and citation-backed synthesis.
 
 ---
 
 ## System Overview
 
-Retrievault is a citation-backed Retrieval-Augmented Generation (RAG) system built over the FastAPI codebase. Its primary goal is to answer developer questions with high precision and provide verifiable citations (exact file paths and line numbers) for every claim.
+RetrieVault is a citation-backed Retrieval-Augmented Generation (RAG) system built over the FastAPI codebase. Its primary goal is to answer developer questions with high precision and provide verifiable citations (exact file paths and line numbers) for every claim.
 
 ```mermaid
 graph TD
@@ -34,7 +34,7 @@ graph TD
 
 ## 1. Ingestion & In-Memory AST Chunking
 
-To preserve syntactic meaning, Retrievault avoids naive character or token splitting. It uses an AST-aware parser to chunk Python source files:
+To preserve syntactic meaning, RetrieVault avoids naive character or token splitting. It uses an AST-aware parser to chunk Python source files:
 * **Function & Class Level Boundaries**: Code is parsed into abstract syntax trees to locate class and function declarations. This guarantees that individual functions and classes remain contiguous inside a single chunk.
 * **Metadata Extraction**: Each chunk retains the source file path, starting/ending line spans, symbol names, and symbol types (e.g., `class`, `function`).
 * **Storage**: Chunks are stored in a Qdrant collection, indexing both the dense vector representation and the sparse token index.
@@ -43,7 +43,7 @@ To preserve syntactic meaning, Retrievault avoids naive character or token split
 
 ## 2. Hybrid Retrieval & Rank Fusion (RRF)
 
-For any query, Retrievault performs a dual-retrieval query to ensure both semantic and keyword matching:
+For any query, RetrieVault performs a dual-retrieval query to ensure both semantic and keyword matching:
 1. **Dense Search**: Semantic matching is performed by embedding the query using `BAAI/bge-base-en-v1.5` and querying Qdrant.
 2. **Sparse Search**: Keyword/lexical matching is performed by tokenizing the query via `Qdrant/bm25` (fastembed) and querying Qdrant.
 3. **Reciprocal Rank Fusion (RRF)**: The two candidate lists are merged using the RRF algorithm, which scores candidates based on their reciprocal rank in both lists to ensure balanced, robust relevance.
