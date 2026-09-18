@@ -1,10 +1,16 @@
 services:
   qdrant:
-    image: qdrant/qdrant:latest
+    # Pinned: an unpinned tag changes the search engine under a published benchmark.
+    image: qdrant/qdrant:v1.18.2
     ports:
       - "6333:6333"
     volumes:
       - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   backend:
     build: ./backend
@@ -14,12 +20,17 @@ services:
       - .env
     environment:
       - QDRANT_URL=http://qdrant:6333
-      - CORPUS_TAG=0.136.3
-      - RETRIEVAULT_SYNTHESIS_MODEL=claude-sonnet-4-6
+      # The local Qdrant has no API key; an empty value also silences the client's
+      # "insecure connection" warning.
+      - QDRANT_API_KEY=
+      - CORS_ORIGINS=http://localhost:3000
     volumes:
-      - ./backend:/app
+      # The ONNX models are downloaded on first use; keep them across container restarts.
+      - model_cache:/models
     depends_on:
-      - qdrant
+      qdrant:
+        condition: service_healthy
 
 volumes:
   qdrant_data:
+  model_cache:

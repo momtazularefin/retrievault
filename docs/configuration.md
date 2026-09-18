@@ -1,59 +1,110 @@
 # RetrieVault Configuration Guide
 
-This document describes all environment variables used to configure the RetrieVault API, hybrid search engine, and evaluation suite. All variables are loaded via Pydantic Settings in `retrievault/config.py`.
+Every setting is an environment variable, read by Pydantic Settings in `retrievault/config.py`.
+Local runs read the repository-root `.env`; containers receive the variables directly. Copy
+`.env.example` to `.env` to start.
 
 ---
 
-## 1. LLM & API Access
+## 1. Synthesis
 
-| Environment Variable | Type | Default | Description |
-|----------------------|------|---------|-------------|
-| `ANTHROPIC_API_KEY` | `str` | *None* | Required API key for Anthropic Claude. |
-| `OPENAI_API_KEY` | `str` | `""` | Required only when `EVAL_JUDGE_PROVIDER=openai` for the Ragas evaluation judge. |
-| `RETRIEVAULT_SYNTHESIS_MODEL` | `str` | `claude-sonnet-4-6` | Synthesis model name used by the LangGraph query pipeline. |
+| Variable | Default | Description |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | *(empty)* | Required to answer queries, and to judge when `EVAL_JUDGE_PROVIDER=claude`. |
+| `RETRIEVAULT_SYNTHESIS_MODEL` | `claude-sonnet-4-6` | Anthropic model id used for synthesis. |
+| `SYNTHESIS_MAX_TOKENS` | `2048` | Output cap. An answer that hits it is reported with `grounding.status = "truncated"` rather than passed off as complete. |
+| `SYNTHESIS_INPUT_USD_PER_MTOK` | `3.0` | Input price used for the cost estimate. Update it with the model. |
+| `SYNTHESIS_OUTPUT_USD_PER_MTOK` | `15.0` | Output price used for the cost estimate. |
 
----
-
-## 2. Qdrant Vector Database
-
-| Environment Variable | Type | Default | Description |
-|----------------------|------|---------|-------------|
-| `QDRANT_URL` | `str` | `http://localhost:6333` | Host URL for the self-hosted Qdrant instance. |
-| `QDRANT_API_KEY` | `str` | `""` | Optional API key for secured remote Qdrant. Leave empty for the local Docker Compose service. |
+The cost in `metadata.est_cost_usd` is an estimate from token counts and these prices, including
+cache writes at 1.25x and cache reads at 0.1x. It is not a billing figure.
 
 ---
 
-## 3. Retrieval Parameters
+## 2. Qdrant
 
-| Environment Variable | Type | Default | Description |
-|----------------------|------|---------|-------------|
-| `PREFETCH_LIMIT` | `int` | `50` | Maximum candidates to fetch from dense/sparse databases initially. |
-| `TOP_N_FUSION` | `int` | `30` | Number of unified candidates merged during Reciprocal Rank Fusion. |
-| `TOP_K_RERANK` | `int` | `6` | Number of final chunks passed to Claude after Cross-Encoder reranking. |
-| `RERANK_MODEL_DIR` | `str` | `models/bge-reranker-onnx` | Local ONNX reranker export/cache directory, resolved relative to `backend/` when not absolute. The directory is generated and ignored by git. |
-| `ACCELERATION` | `str` | `none` | Hardware acceleration for fastembed and the ONNX reranker. `none` = CPU only, `gpu` = GPU (strict), `npu` = NPU (strict). No silent fallback. |
+| Variable | Default | Description |
+|---|---|---|
+| `QDRANT_URL` | `http://localhost:6333` | Qdrant endpoint. |
+| `QDRANT_API_KEY` | *(empty)* | Leave empty for the local Compose service; set for a secured remote instance. |
+| `QDRANT_COLLECTION` | `retrievault_fastapi` | Collection to index into and query. Point a second collection at a different tag or chunker to compare them. |
 
 ---
 
-## 4. Evaluation Suite Configuration
+## 3. Corpus
 
-These settings control the behavior of the evaluation pipeline in `retrievault/eval.py`.
-
-| Environment Variable | Type | Recommended Range | Description |
-|----------------------|------|-------------------|-------------|
-| `EVAL_GOOD_COUNT` | `int` | `3` to `45` | Number of factual questions from `dataset.jsonl` to evaluate. (45 for a full run). |
-| `EVAL_REFUSAL_COUNT` | `int` | `2` to `5` | Number of trick/refusal questions from `dataset.jsonl` to evaluate. (5 for a full run). |
-| `EVAL_JUDGE_PROVIDER` | `str` | `claude` or `openai` | Provider used for Ragas judging. The model must match the provider. |
-| `EVAL_JUDGE_MODEL` | `str` | *Model name* | LLM used to grade Ragas results (default: `claude-haiku-4-5-20251001`; latest smoke report used `gpt-4o-mini`). |
-| `EVAL_USE_RESPONSE_CACHE` | `bool` | `True` or `False` | Enables Layer 1 caching of backend response outputs. (Should be `False` in Dev/CI). |
-| `EVAL_USE_JUDGE_CACHE` | `bool` | `True` or `False` | Enables Layer 2 LangChain SQLite caching of Ragas judge calls. (Should be `False` in Dev/CI). |
-| `EVAL_MAX_WORKERS` | `int` | `16` to `50` | Concurrency limit for parallel Ragas grading tasks. (Default `30`). |
-| `EVAL_CONCURRENT_QUERIES` | `int` | `2` to `10` | Concurrency limit for parallel queries to the FastAPI RAG backend. (Default `5`). |
+| Variable | Default | Description |
+|---|---|---|
+| `CORPUS_REPO` | `fastapi/fastapi` | GitHub repository to index. |
+| `CORPUS_TAG` | `0.136.3` | Release tag. Used for the archive download, citation URLs, and the manifest. Changing it requires a re-ingest and a re-curated evaluation set. |
 
 ---
 
-## 5. Frontend Configuration
+## 4. Retrieval
 
-| Environment Variable | Type | Default | Description |
-|----------------------|------|---------|-------------|
-| `NEXT_PUBLIC_API_URL` | `str` | `http://localhost:8000` | Browser-visible API base URL used by the Next.js chat UI. Set this in `frontend/.env.local` when the API is not running on localhost. |
+| Variable | Default | Description |
+|---|---|---|
+| `PREFETCH_LIMIT` | `50` | Candidates fetched per vector (dense and sparse) before fusion. |
+| `TOP_N_FUSION` | `12` | Candidates kept after fusion and handed to the reranker. Was 30; a deeper pool scored no better and cost 3.6x the time. |
+| `TOP_K_RERANK` | `6` | Chunks sent to the model. |
+| `RERANK_ENABLED` | `true` | `false` sends the fused top-k straight to the model. On the evaluation set that scores the same and removes seconds of latency — see [evaluation.md](evaluation.md). |
+
+---
+
+## 5. Local models and hardware
+
+| Variable | Default | Description |
+|---|---|---|
+| `EMBED_MODEL` | `BAAI/bge-base-en-v1.5` | Dense embedder (fastembed serves an int8-quantised ONNX export). |
+| `SPARSE_MODEL` | `Qdrant/bm25` | Sparse encoder. Pure Python and hashing, no ONNX session. |
+| `RERANK_MODEL` | `BAAI/bge-reranker-base` | Cross-encoder. `Xenova/ms-marco-MiniLM-L-6-v2` is a much smaller alternative. |
+| `FASTEMBED_CACHE_PATH` | *(system temp)* | Where the ONNX models are cached. The default lives in the temp directory, which is cleared periodically; set a stable path to avoid re-downloading about 1.2 GB. |
+| `ACCELERATION` | `none` | `none` (CPU), `gpu` (CUDA, ROCm, or DirectML), `npu` (Vitis AI). |
+
+`ACCELERATION` is strict in both directions. A requested provider that ONNX Runtime does not
+have raises at startup, and the session is re-checked after creation because ONNX Runtime falls
+back to the CPU by itself and only prints a warning. DirectML is a GPU path, so it is not
+accepted for `npu`: on an AMD Ryzen AI laptop it runs on the Radeon iGPU, and reporting that as
+NPU inference would be false.
+
+The published numbers were measured with `ACCELERATION=none`. Provider choice changes the last
+decimals of a vector, so an index built on one provider is not bit-identical to another; the
+manifest records which was used.
+
+---
+
+## 6. API
+
+| Variable | Default | Description |
+|---|---|---|
+| `CORS_ORIGINS` | `http://localhost:3000` | Comma-separated browser origins allowed to call the API. Credentials are not allowed, so a wildcard is never needed. |
+
+Requests are bounded at the schema: `question` at most 2,000 characters, `top_k` between 1 and
+20. The legacy `{"query": ...}` field is still accepted.
+
+---
+
+## 7. Evaluation
+
+| Variable | Default | Description |
+|---|---|---|
+| `EVAL_GOOD_COUNT` | `45` | Answerable questions to run. The curated set has 45. |
+| `EVAL_REFUSAL_COUNT` | `5` | Refusal probes to run. The curated set has 5. |
+| `EVAL_JUDGE_PROVIDER` | `claude` | `claude` or `openai`. There is no automatic fallback; a missing key for the selected provider is an error. |
+| `EVAL_JUDGE_MODEL` | `claude-haiku-4-5-20251001` | Judge model. The evaluation plan fixes this one for reproducibility, and it is deliberately not the synthesis model. |
+| `EVAL_MAX_WORKERS` | `8` | Parallel judge calls. Queries themselves always run one at a time, so each reported latency is a single-request latency. |
+| `OPENAI_API_KEY` | *(empty)* | Only for `EVAL_JUDGE_PROVIDER=openai`. |
+
+There is no response cache and no judge cache: a cached answer keyed on settings alone silently
+survives a code change, which is exactly when a result must not be reused.
+
+---
+
+## 8. Frontend
+
+| Variable | Default | Description |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Browser-visible API base URL. Set it in `frontend/.env.local`. |
+
+The UI reads the model name, corpus tag, chunk count, and build hash from `/health` instead of
+hard-coding them, so it cannot drift from the running backend.

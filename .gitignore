@@ -6,8 +6,6 @@ __pycache__/
 venv/
 ENV/
 .env
-manifest.json
-backend/manifest.json
 
 # Node
 node_modules/
@@ -23,7 +21,9 @@ build/
 # Cache & Local databases
 *.db
 *.sqlite
-backend/eval/.cache_responses.json
+
+# Uncurated evaluation candidates (see backend/generate_dataset.py)
+backend/eval/dataset.candidates.jsonl
 
 # Generated ML/runtime artifacts
 backend/models/

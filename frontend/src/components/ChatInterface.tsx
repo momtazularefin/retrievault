@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 type Citation = {
@@ -14,11 +14,19 @@ type Citation = {
   snippet: string;
 };
 
+type Grounding = {
+  status: 'grounded' | 'refused' | 'invalid_citations' | 'uncited' | 'truncated';
+  invalid_labels: string[];
+  retries: number;
+};
+
 type Message = {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   citations?: Citation[];
+  refused?: boolean;
+  grounding?: Grounding;
   metadata?: {
     latency_ms: Record<string, number>;
     tokens: Record<string, number>;
@@ -29,73 +37,97 @@ type Message = {
 type HealthInfo = {
   status: string;
   qdrant: boolean;
+  index_complete: boolean;
   model: string;
   corpus: {
     repo: string;
     commit_tag: string;
     chunk_count: number | null;
+    chunker_version: string | null;
   };
   build_hash: string;
   startup_time: number;
 };
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const ACTIVE_CHAT_KEY = 'retrievault_active_chat';
+const RECENT_QUERIES_KEY = 'retrievault_recent_queries';
+
+// Hydration-safe "are we past the server render": the server snapshot is false, so the first
+// client render matches the server's HTML, and React re-renders with stored state right after.
+const emptySubscribe = () => () => {};
+function useIsClient() {
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
+}
+
 function readStoredJson<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
-
-  const saved = localStorage.getItem(key);
-  if (!saved) return fallback;
-
   try {
-    return JSON.parse(saved) as T;
+    const saved = localStorage.getItem(key);
+    return saved ? (JSON.parse(saved) as T) : fallback;
   } catch (error) {
-    console.error(`Failed to parse ${key}`, error);
+    console.error(`Failed to read ${key}`, error);
     return fallback;
   }
 }
 
 const SUGGESTIONS = [
-  "How to use FastAPI's Cookie to declare a default value?",
-  "What is the purpose of the _DefaultLifespan class?",
-  "Does FastAPI support Flask blueprints?"
+  'How does APIRouter.include_router combine prefixes?',
+  'What does _DefaultLifespan do on startup and shutdown?',
+  'How to configure a Celery broker in FastAPI core?',
 ];
 
+// Answers that are not plainly grounded say so, rather than looking like any other answer.
+const GROUNDING_NOTICES: Record<Grounding['status'], string | null> = {
+  grounded: null,
+  refused: null,
+  invalid_citations: 'Some citations in this answer did not resolve to a retrieved source and were dropped.',
+  uncited: 'This answer cites no source, so nothing in it is backed by the retrieved code.',
+  truncated: 'This answer hit the output limit and stops mid-thought.',
+};
+
 export default function ChatInterface() {
+  const isClient = useIsClient();
   const [messages, setMessages] = useState<Message[]>(() =>
-    readStoredJson<Message[]>('retrievault_active_chat', [])
+    readStoredJson<Message[]>(ACTIVE_CHAT_KEY, [])
   );
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [recentQueries, setRecentQueries] = useState<string[]>(() =>
-    readStoredJson<string[]>('retrievault_recent_queries', [])
+    readStoredJson<string[]>(RECENT_QUERIES_KEY, [])
   );
-  
+  // Stored state is withheld from the server render and the hydration render.
+  const visibleMessages = isClient ? messages : [];
+  const visibleRecentQueries = isClient ? recentQueries : [];
+
   const [health, setHealth] = useState<HealthInfo | null>(null);
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
   const [relativeTime, setRelativeTime] = useState('Checking connection...');
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const nextMessageId = useRef(0);
 
-  // Sync messages to localStorage
   useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('retrievault_active_chat', JSON.stringify(messages));
-    } else {
-      localStorage.removeItem('retrievault_active_chat');
+    if (!isClient) return;
+    try {
+      if (messages.length > 0) {
+        localStorage.setItem(ACTIVE_CHAT_KEY, JSON.stringify(messages));
+      } else {
+        localStorage.removeItem(ACTIVE_CHAT_KEY);
+      }
+    } catch (error) {
+      console.error('Failed to save chat', error);
     }
-  }, [messages]);
+  }, [messages, isClient]);
 
-  // Auto-scroll to bottom of chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
     const checkHealth = async () => {
       try {
-        const res = await fetch(`${apiUrl}/health`);
+        const res = await fetch(`${API_URL}/health`);
         if (!res.ok) throw new Error('Unhealthy');
         const data: HealthInfo = await res.json();
         setHealth(data);
@@ -112,23 +144,14 @@ export default function ChatInterface() {
   }, []);
 
   useEffect(() => {
-    if (!health) {
-      return;
-    }
+    if (!health) return;
 
     const updateTime = () => {
-      const nowSeconds = Math.floor(Date.now() / 1000);
-      const elapsed = Math.max(0, nowSeconds - health.startup_time);
-
-      if (elapsed < 5) {
-        setRelativeTime('Updated just now');
-      } else if (elapsed < 60) {
-        setRelativeTime(`Updated ${elapsed}s ago`);
-      } else if (elapsed < 3600) {
-        setRelativeTime(`Updated ${Math.floor(elapsed / 60)}m ago`);
-      } else {
-        setRelativeTime(`Updated ${Math.floor(elapsed / 3600)}h ago`);
-      }
+      const elapsed = Math.max(0, Math.floor(Date.now() / 1000) - health.startup_time);
+      if (elapsed < 5) setRelativeTime('Updated just now');
+      else if (elapsed < 60) setRelativeTime(`Updated ${elapsed}s ago`);
+      else if (elapsed < 3600) setRelativeTime(`Updated ${Math.floor(elapsed / 60)}m ago`);
+      else setRelativeTime(`Updated ${Math.floor(elapsed / 3600)}h ago`);
     };
 
     updateTime();
@@ -140,10 +163,13 @@ export default function ChatInterface() {
     const cleanQuery = queryText.trim();
     if (!cleanQuery || isLoading) return;
 
-    // Track unique recent queries in state & localStorage
     setRecentQueries(prev => {
       const updated = [cleanQuery, ...prev.filter(q => q !== cleanQuery)].slice(0, 10);
-      localStorage.setItem('retrievault_recent_queries', JSON.stringify(updated));
+      try {
+        localStorage.setItem(RECENT_QUERIES_KEY, JSON.stringify(updated));
+      } catch (error) {
+        console.error('Failed to save recent queries', error);
+      }
       return updated;
     });
 
@@ -159,33 +185,37 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const res = await fetch(`${apiUrl}/query`, {
+      const res = await fetch(`${API_URL}/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: userMsg.content }),
       });
 
-      if (!res.ok) throw new Error('API Error');
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const data = await res.json();
 
-      const assistantMsg: Message = {
-        id: createMessageId(),
-        role: 'assistant',
-        content: data.answer,
-        citations: data.citations,
-        metadata: data.metadata,
-      };
-
-      setMessages(prev => [...prev, assistantMsg]);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: createMessageId(),
+          role: 'assistant',
+          content: data.answer,
+          citations: data.citations,
+          refused: data.refused,
+          grounding: data.grounding,
+          metadata: data.metadata,
+        },
+      ]);
     } catch (err) {
       console.error(err);
-      const errorMsg: Message = {
-        id: createMessageId(),
-        role: 'assistant',
-        content: 'Sorry, I encountered an error communicating with the backend.'
-      };
-      setMessages(prev => [...prev, errorMsg]);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: createMessageId(),
+          role: 'assistant',
+          content: 'Sorry, I encountered an error communicating with the backend.',
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -207,12 +237,11 @@ export default function ChatInterface() {
 
   return (
     <div className="flex w-full h-full overflow-hidden bg-[#090d16] text-slate-100 font-sans">
-      
+
       {/* Sidebar Panel */}
       <aside className="hidden md:flex flex-col w-64 bg-[#0c1221] border-r border-white/5 p-4 justify-between h-full select-none">
         <div className="flex flex-col gap-6">
-          {/* Logo - Clickable to Landing Page */}
-          <button 
+          <button
             onClick={startNewChat}
             className="flex items-center gap-2 px-2 py-1 text-left cursor-pointer group focus:outline-none"
           >
@@ -224,8 +253,7 @@ export default function ChatInterface() {
             </span>
           </button>
 
-          {/* New Chat Button */}
-          <button 
+          <button
             onClick={startNewChat}
             className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 font-semibold rounded-full transition-all duration-300 hover:scale-[1.01]"
           >
@@ -235,13 +263,12 @@ export default function ChatInterface() {
             New chat
           </button>
 
-          {/* Recent Queries */}
           <div className="flex flex-col gap-2">
             <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase px-2">Recent Queries</span>
             <div className="flex flex-col gap-0.5 max-h-[300px] overflow-y-auto pr-1">
-              {recentQueries.map((q, idx) => (
-                <button 
-                  key={idx} 
+              {visibleRecentQueries.map(q => (
+                <button
+                  key={q}
                   onClick={() => submitQuery(q)}
                   className="text-left text-xs text-slate-400 hover:text-slate-200 hover:bg-white/5 px-2.5 py-2 rounded-lg truncate transition-all duration-200"
                   title={q}
@@ -249,34 +276,36 @@ export default function ChatInterface() {
                   💬 {q}
                 </button>
               ))}
-              {recentQueries.length === 0 && (
+              {visibleRecentQueries.length === 0 && (
                 <span className="text-xs text-slate-600 px-2.5 py-2 italic">No history yet</span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Footer Info */}
+        {/* Footer Info: reported by the backend, never hard-coded here. */}
         <div className="flex flex-col gap-2 border-t border-white/5 pt-4 px-2 text-[10px] text-slate-500">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            <span>LLM: Claude Sonnet 4.6</span>
-          </div>
-          {health && (
+          {health ? (
             <div className="flex flex-col gap-1.5">
-              <span>📚 {health.corpus.repo} @ {health.corpus.commit_tag}</span>
+              <span>🧠 {health.model}</span>
+              <span>
+                📚 {health.corpus.repo} @ {health.corpus.commit_tag}
+                {health.corpus.chunk_count !== null && ` · ${health.corpus.chunk_count} chunks`}
+              </span>
               <span>🛠️ Build: <code className="bg-white/5 px-1 rounded text-blue-400/90 font-mono font-semibold">{health.build_hash}</code></span>
+              {!health.index_complete && <span className="text-amber-400">⚠️ Index incomplete</span>}
             </div>
+          ) : (
+            <span>Backend unavailable</span>
           )}
         </div>
       </aside>
 
       {/* Main Chat Panel */}
       <section className="flex-1 flex flex-col h-full overflow-hidden relative bg-[radial-gradient(circle_at_50%_40%,rgba(16,24,48,0.7),transparent_50%)]">
-        
-        {/* Top Floating Header */}
+
         <header className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-[#090d16]/30 backdrop-blur-sm z-10 select-none">
-          <button 
+          <button
             onClick={startNewChat}
             className="flex items-center gap-2 md:hidden text-left focus:outline-none group"
           >
@@ -296,26 +325,24 @@ export default function ChatInterface() {
           </div>
         </header>
 
-        {/* Scrollable Message Container */}
         <div className="flex-1 overflow-y-auto w-full">
           <div className="max-w-4xl mx-auto px-6 py-8 md:py-12 flex flex-col gap-8 w-full min-h-full">
-            {messages.length === 0 ? (
-              /* Welcome / Empty State */
+            {visibleMessages.length === 0 ? (
               <div className="flex-grow flex flex-col justify-center items-center text-center animate-[fadeIn_0.5s_ease-out_forwards] gap-10 py-12 select-none">
                 <div className="flex flex-col gap-3">
                   <h2 className="font-display text-3xl md:text-5xl font-bold bg-gradient-to-r from-blue-300 via-blue-100 to-indigo-300 bg-clip-text text-transparent leading-tight">
-                    The codebase is yours, Momtazul.
+                    Ask the FastAPI source
                   </h2>
                   <p className="text-slate-400 text-sm md:text-base max-w-md mx-auto">
-                    Ask questions about FastAPI&apos;s routes, dependencies, security layers, or internal configurations.
+                    Every answer is built from indexed source chunks and cites the exact file and
+                    lines. Questions the code cannot answer are refused, not guessed.
                   </p>
                 </div>
 
-                {/* Suggestions Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full max-w-3xl mt-4">
-                  {SUGGESTIONS.map((s, idx) => (
+                  {SUGGESTIONS.map(s => (
                     <button
-                      key={idx}
+                      key={s}
                       onClick={() => submitQuery(s)}
                       className="text-left text-sm bg-[#101625]/60 hover:bg-[#151e33] border border-white/5 hover:border-blue-500/20 p-4 rounded-xl shadow-md transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 group flex flex-col justify-between h-28"
                     >
@@ -328,16 +355,14 @@ export default function ChatInterface() {
                 </div>
               </div>
             ) : (
-              /* Messages Stream */
               <div className="flex flex-col gap-8 pb-12">
-                {messages.map(m => (
-                  <div 
-                    key={m.id} 
+                {visibleMessages.map(m => (
+                  <div
+                    key={m.id}
                     className={`flex gap-4 w-full animate-[fadeIn_0.3s_ease-out] ${
                       m.role === 'user' ? 'justify-end' : 'justify-start'
                     }`}
                   >
-                    {/* Left Avatar for Assistant */}
                     {m.role === 'assistant' && (
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md select-none">
                         <svg className="w-4 h-4 text-white fill-current" viewBox="0 0 24 24">
@@ -346,35 +371,45 @@ export default function ChatInterface() {
                       </div>
                     )}
 
-                    {/* Message Bubble */}
                     <div className={`flex flex-col max-w-[85%] ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
                       <div className={`px-5 py-3.5 rounded-2xl text-[15px] leading-relaxed ${
-                        m.role === 'user' 
-                          ? 'bg-blue-600 text-white rounded-tr-sm shadow-md' 
+                        m.role === 'user'
+                          ? 'bg-blue-600 text-white rounded-tr-sm shadow-md'
                           : 'text-slate-200 bg-transparent w-full'
                       }`}>
                         {m.role === 'user' ? (
                           m.content
                         ) : (
                           <div className="flex flex-col gap-2">
+                            {m.refused && (
+                              <span className="self-start text-[10px] font-bold tracking-wider uppercase text-amber-400 bg-amber-400/10 border border-amber-400/25 px-2 py-0.5 rounded">
+                                Not in the retrieved source
+                              </span>
+                            )}
                             <MarkdownWithCitations content={m.content} citations={m.citations} />
+                            {m.grounding && GROUNDING_NOTICES[m.grounding.status] && (
+                              <span className="text-xs text-amber-400/90">
+                                ⚠️ {GROUNDING_NOTICES[m.grounding.status]}
+                                {m.grounding.invalid_labels.length > 0 &&
+                                  ` (${m.grounding.invalid_labels.join(', ')})`}
+                              </span>
+                            )}
                           </div>
                         )}
                       </div>
 
-                      {/* Metadata / Latency Indicator */}
                       {m.metadata && (
                         <div className="mt-1 px-5 text-[10px] text-slate-500 flex gap-4 select-none">
                           <span>⏱️ {m.metadata.latency_ms.total.toFixed(0)}ms</span>
                           <span>🪙 ${m.metadata.est_cost_usd.toFixed(4)}</span>
                           <span>Tokens: {m.metadata.tokens.input} in / {m.metadata.tokens.output} out</span>
+                          {m.grounding && m.grounding.retries > 0 && <span>↻ 1 corrective retry</span>}
                         </div>
                       )}
                     </div>
                   </div>
                 ))}
 
-                {/* Loader */}
                 {isLoading && (
                   <div className="flex gap-4 w-full justify-start animate-[fadeIn_0.3s_ease-out]">
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md select-none">
@@ -387,14 +422,13 @@ export default function ChatInterface() {
                     </div>
                   </div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
             )}
           </div>
         </div>
 
-        {/* Bottom Centered Pill Input Bar */}
         <div className="w-full bg-gradient-to-t from-[#090d16] via-[#090d16]/95 to-transparent pt-4 pb-4 px-4 z-10">
           <div className="max-w-4xl mx-auto w-full flex flex-col gap-2.5">
             <form onSubmit={handleSubmit} className="flex items-center gap-3 bg-[#111726]/80 hover:bg-[#151d30] border border-white/5 focus-within:border-blue-500/30 rounded-full px-5 py-3.5 shadow-lg backdrop-blur-md transition-all duration-300">
@@ -404,10 +438,11 @@ export default function ChatInterface() {
                 onChange={e => setInput(e.target.value)}
                 placeholder="Ask about dependency scopes, routers, or request handling..."
                 disabled={isLoading}
+                maxLength={2000}
                 className="flex-grow bg-transparent text-white placeholder-slate-500 text-base outline-none font-sans px-2"
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={isLoading || !input.trim()}
                 className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 disabled:opacity-30 disabled:hover:bg-blue-500 text-white flex items-center justify-center transition-all duration-300 hover:scale-[1.03] disabled:scale-[1.0]"
               >
@@ -417,7 +452,6 @@ export default function ChatInterface() {
               </button>
             </form>
 
-            {/* Bottom Status / Relative Time indicator */}
             <div className="flex items-center justify-between px-6 text-[10px] text-slate-500 select-none">
               <div className="flex items-center gap-2">
                 <span>API Status: </span>
@@ -440,7 +474,9 @@ function MarkdownWithCitations({ content, citations }: { content: string, citati
   let processedContent = content;
   if (citations && citations.length > 0) {
     citations.forEach(cit => {
-      const regex = new RegExp(`\\[${cit.label.replace('[', '').replace(']', '')}\\]`, 'g');
+      // cit.label is "[S3]"; link only that exact label, so [S3] never matches inside [S30].
+      const number = cit.label.replace(/\D/g, '');
+      const regex = new RegExp(`\\[S${number}\\]`, 'g');
       processedContent = processedContent.replace(regex, `[${cit.label}](${cit.github_url})`);
     });
   }
@@ -466,11 +502,11 @@ function MarkdownWithCitations({ content, citations }: { content: string, citati
           const isCitation = children?.toString().startsWith('[S');
           if (isCitation) {
             return (
-              <a 
-                href={href} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center justify-center bg-blue-400/10 text-blue-400 border border-blue-400/25 px-1.5 py-0.5 rounded text-[11px] font-semibold mx-0.5 no-underline transition-all hover:bg-blue-400/20 hover:-translate-y-0.5 align-super" 
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center bg-blue-400/10 text-blue-400 border border-blue-400/25 px-1.5 py-0.5 rounded text-[11px] font-semibold mx-0.5 no-underline transition-all hover:bg-blue-400/20 hover:-translate-y-0.5 align-super"
                 title={href}
               >
                 {children}

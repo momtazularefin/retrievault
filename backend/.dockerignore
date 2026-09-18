@@ -1,0 +1,19 @@
+# The build context is the backend directory. Everything not needed to install and run the
+# service stays out of it: a local .venv alone is several gigabytes.
+.venv/
+models/
+scratch/
+tests/
+eval/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.db
+*.sqlite
+*.onnx
+*.onnx.data
+*.safetensors
+manifest.json
+*.iml

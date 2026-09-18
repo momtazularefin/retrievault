@@ -1,142 +1,160 @@
 # RetrieVault
 
-Production-grade citation-backed RAG service over the FastAPI codebase.
+Citation-backed question answering over the FastAPI codebase. Every claim in an answer points at
+the exact file and lines it came from; a question the source does not answer is refused, not
+guessed.
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/momtazularefin/retrievault/ci.yml?branch=main&label=CI)](https://github.com/momtazularefin/retrievault/actions)
-[![License](https://img.shields.io/github/license/momtazularefin/retrievault.svg?label=License)](https://github.com/momtazularefin/retrievault/blob/main/LICENSE)
-[![Python Version](https://img.shields.io/badge/python-3.12-blue.svg?label=Python)](https://python.org)
+[![CI](https://img.shields.io/github/actions/workflow/status/momtazularefin/retrievault/ci.yml?branch=main&label=CI)](https://github.com/momtazularefin/retrievault/actions)
+[![License](https://img.shields.io/github/license/momtazularefin/retrievault.svg?label=License)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.12-blue.svg?label=Python)](https://python.org)
 
-## What It Does
+## What it does
 
-RetrieVault answers natural-language questions about the FastAPI codebase with grounded, citation-backed answers. Every factual claim is bound to exact source files and line ranges that link directly to GitHub.
+Ask "how does `APIRouter.include_router` combine prefixes?" and get an answer whose every
+sentence carries a link into `fastapi/routing.py` at the lines that support it, at the pinned
+release tag. Ask about Celery and it says it could not find that in the retrieved source.
 
-If a query is out-of-scope or unanswerable from the context, the engine cleanly refuses to answer rather than fabricating code claims or hallucinations.
+Three properties the system holds itself to:
+
+- **A citation is exact.** A chunk's text is exactly the source lines its citation names — checked
+  for all 838 indexed chunks, with no overlaps and no line belonging to two chunks.
+- **A refusal is a fact, not a guess.** The model is required to open a refusal with one fixed
+  sentence, so the API reports `refused: true` deterministically instead of scanning for the word
+  "cannot".
+- **Every answer reports its own grounding.** `grounded`, `refused`, `invalid_citations`,
+  `uncited`, or `truncated` — failure modes are surfaced, not smoothed over.
 
 ## Architecture
 
-RetrieVault implements AST-aware Python code ingestion, dense + sparse hybrid retrieval with rank fusion, and an agentic validation loop inside LangGraph.
-
 ```mermaid
 graph TD
-    Query[User Query] --> Retrieval[Hybrid Retrieval Stage]
-    
-    subgraph Retrieval [Retrieval Stage]
-        Dense[Dense: Qdrant + BGE]
-        Sparse[Sparse BM25: fastembed]
-    end
-    
-    Retrieval --> Fusion[Reciprocal Rank Fusion - RRF]
-    Fusion --> Rerank[ONNX Cross-Encoder Reranking: BGE-Reranker-Base]
-    Rerank --> Graph[LangGraph Synthesis Pipeline]
-    
-    subgraph Graph [LangGraph Engine]
-        Synth[Synthesize Node: Claude Sonnet 4.6] --> Validate{Validate Node: Citations}
-        Validate -- Valid --> Out[Return Response]
-        Validate -- "Invalid / Retry < 1" --> Retry[Auto-Retry Loop] --> Synth
+    Query[User question] --> Encode[Encode: BGE dense + BM25 sparse]
+    Encode --> Qdrant[Qdrant Query API: 50 candidates per vector]
+    Qdrant --> Fusion[Reciprocal rank fusion → top 12]
+    Fusion --> Rerank[ONNX cross-encoder → top 6]
+    Rerank --> Graph[LangGraph]
+
+    subgraph Graph [LangGraph synthesis]
+        Synth[Claude Sonnet 4.6] --> Validate{Validate citations}
+        Validate -- grounded / refused --> Out[Answer + citations + grounding status]
+        Validate -- invalid or uncited, once --> Synth
     end
 ```
 
-For a detailed explanation of our ingestion boundaries, rank fusion math, and agentic error-correction loop, see [Architecture & Design →](docs/architecture.md).
+Chunking is AST-aware: definitions stay whole while they fit a size budget, a large class becomes
+a header chunk plus one chunk per method (each citing its own lines), and an oversized function is
+split at parameter and statement boundaries. Details, and the reasoning behind each stage, in
+[Architecture & Design →](docs/architecture.md).
 
-## Evaluation & Benchmark Results
+## Evaluation
 
-Milestone 8 is in progress. The latest local smoke report was generated on 2026-07-03 from 5 queries (3 factual + 2 refusal), using `claude-sonnet-4-6` for synthesis and `gpt-4o-mini` as the judge. It does **not** pass the AC4/AC5 gates yet.
+Measured, published, and not passing every gate. The numbers below come from
+`backend/eval/reports/report.md`, produced by one command against the real service.
 
-| Metric | Target | Latest Smoke Result | Status |
-|--------|--------|---------------------|--------|
-| **Faithfulness** | >= 0.85 | **0.00** | Fail |
-| **Context Precision** | >= 0.70 | **0.00** | Fail |
-| **Answer Relevancy** | >= 0.80 | **0.00** | Fail |
-| **Citation Validity** | == 1.00 | **1.00** | Pass |
-| **Refusal Correctness** | >= 0.90 | **1.00** | Pass |
-| **P50 Latency** | <= 3.0s | **7.70s** | Fail |
-| **P95 Latency** | <= 8.0s | **12.03s** | Fail |
-| **Cost / Query** | <= $0.06 | **$0.0037** | Pass |
+| Metric | Target | Measured | |
+|---|---|---|---|
+| Faithfulness (Ragas) | >= 0.85 | **0.91** | Pass |
+| Context precision (Ragas) | >= 0.70 | **0.70** | Pass |
+| Answer relevancy (Ragas) | >= 0.80 | **0.84** | Pass |
+| Citation validity | = 1.00 | **1.00** | Pass |
+| Refusal correctness | >= 0.90 | **1.00** | Pass |
+| Cost per query | <= $0.06 | **$0.0090** | Pass |
+| P50 latency | <= 3.0 s | **8.70 s** | **Fail** |
+| P95 latency | <= 8.0 s | **14.14 s** | **Fail** |
 
-For the report source and metric definitions, see [Evaluation & Benchmarks Reference](docs/evaluation.md) and `backend/eval/reports/report.md`.
+50 queries (45 answerable, 5 refusal probes) against the running service, one at a time, on
+laptop CPU. Zero failed requests, zero unscored judge jobs, and zero answers needing a corrective
+retry. Two answerable questions were refused where retrieval missed — a refusal, not a
+fabrication. Dataset v1.1, judge `claude-haiku-4-5-20251001`, index of 838 chunks at chunker v2.
+
+**The latency gates fail, and the breakdown says why.** Stage P50: retrieve 0.04 s, rerank 3.10 s,
+synthesize 5.69 s. Generation alone is roughly twice the 3-second P50 target, which was set during
+planning before anything had been measured. The honest options are streaming (moving the
+user-visible number to time-to-first-token), turning off the reranker (measured as equal quality on
+this corpus, saving about 3 s), a GPU (rerank drops to 1.7 s), or a smaller synthesis model. None
+was applied here, because this run is the baseline they would be measured against.
+
+Context precision landing exactly on its threshold is worth treating as a coin flip rather than a
+pass: repeated runs of the same configuration varied by about 0.03 on the judged metrics.
+
+Full metric definitions, the reranker measurement, and the known limits of this dataset are in
+[Evaluation →](docs/evaluation.md).
 
 ## Quickstart
 
-For a step-by-step developer setup guide starting from a completely empty laptop, refer to the **[Getting Started & Operations Guide →](docs/getting-started.md)**.
+Requires Docker, [uv](https://docs.astral.sh/uv/), Node 24, and an Anthropic API key. The
+step-by-step version, from an empty machine, is the
+[Getting Started guide →](docs/getting-started.md).
 
-Otherwise, get RetrieVault up and running locally in under 5 minutes:
-
-### 1. Clone & Install Dependencies
-Ensure you have `uv` installed, then run:
 ```bash
 git clone https://github.com/momtazularefin/retrievault.git
-cd retrievault/backend
+cd retrievault
+cp .env.example .env            # add ANTHROPIC_API_KEY
+
+docker compose up -d qdrant     # vector store
+
+cd backend
 uv sync --all-extras
+uv run python -m retrievault.ingest       # ~840 chunks; downloads ~1.2 GB of ONNX models once
+uv run uvicorn retrievault.api:app --port 8000
+
+cd ../frontend && npm install && npm run dev    # http://localhost:3000
 ```
 
-### 2. Configure Environment
-Copy the example environment template and populate your Anthropic API Key:
-```bash
-cp ../.env.example ../.env
-# Edit ../.env and add your ANTHROPIC_API_KEY
-```
-For a detailed description of all configurations, see the [Configuration Reference →](docs/configuration.md).
-
-### 3. Spin Up Vector Store & Index Code
-Start the Qdrant service via Docker and ingest the pinned `fastapi` codebase package:
-```bash
-docker compose -f ../docker-compose.yml up -d qdrant
-uv run python -m retrievault.ingest
-```
-
-### 4. Run the API & Frontend
-Launch the FastAPI backend server:
-```bash
-uv run uvicorn retrievault.api:app --reload
-```
-In another terminal, launch the Next.js chat interface:
-```bash
-cd ../frontend
-npm install
-npm run dev
-```
-
-### 5. Run the Evaluation Harness
-Execute the async parallelized evaluation loop to verify system performance:
-```bash
-cd ../backend
-uv run python -m retrievault.eval
-```
+`GET /health` reports whether the index is complete and which chunker built it; the UI reads the
+same endpoint, so it cannot misreport the model or corpus it is talking to.
 
 ## Stack
 
-| Component | Technology | Version / Model |
-|-----------|------------|-----------------|
-| **RAG Runtime** | Python | `3.12` |
-| **Database** | Qdrant | `qdrant/qdrant:latest` local Docker image |
-| **Embeddings** | BGE Base | `BAAI/bge-base-en-v1.5` |
-| **Reranker** | BGE Reranker via ONNX Runtime | `BAAI/bge-reranker-base` |
-| **Agent Framework** | LangGraph | `0.1` |
-| **Synthesis LLM** | Claude | `claude-sonnet-4-6` |
-| **Frontend** | Next.js | `16.2.9` |
+| Component | Choice | Version / model |
+|---|---|---|
+| Runtime | Python | 3.12 |
+| Vector store | Qdrant | `v1.18.2`, named dense + sparse vectors, server-side RRF |
+| Dense embeddings | BGE base (int8 ONNX via fastembed) | `BAAI/bge-base-en-v1.5` |
+| Sparse | BM25 via fastembed, IDF applied by Qdrant | `Qdrant/bm25` |
+| Reranker | Cross-encoder, ONNX Runtime | `BAAI/bge-reranker-base` |
+| Orchestration | LangGraph | 1.2.x |
+| Synthesis | Claude | `claude-sonnet-4-6` |
+| Evaluation | Ragas + a fixed judge | judge `claude-haiku-4-5-20251001` |
+| Frontend | Next.js | 16.2.9 |
 
-## Project Structure
+Serving needs none of torch, transformers, or optimum: all three local models come from fastembed
+through one ONNX Runtime.
+
+## Project structure
 
 ```text
-├── backend/                  # Python API & Search Engine
-│   ├── retrievault/          # Core RAG source code
-│   │   ├── retrieve/         # Dense, sparse & fusion retrieval
-│   │   ├── rerank/           # Reranking wrapper
-│   │   └── synthesize/       # LangGraph state machine & prompts
-│   ├── eval/                 # Evaluation dataset & reports
-│   └── pyproject.toml        # uv dependency configuration
-├── frontend/                 # Next.js 16.2.9 Tailwind Chat UI
-├── docs/                     # Developer reference documentation
-└── docker-compose.yml        # Qdrant local container configuration
+backend/
+  retrievault/         chunker, ingest, retrieve, rerank, synthesize, api, eval
+  eval/                curated dataset, paraphrase probe, generated reports
+  tests/               71 tests, 3 of them against a live Qdrant
+frontend/              Next.js chat UI
+docs/                  architecture, configuration, evaluation, getting started
+docker-compose.yml     pinned Qdrant + backend
 ```
 
-## Deeper Documentation
+## What I would do next
 
-* **[Getting Started & Operations](docs/getting-started.md)** — Clean machine environment setup, code checkouts, local run instructions, and code change management guides.
-* **[Architecture & Design](docs/architecture.md)** — Ingestion boundaries, rank fusion, and agentic error-correction state machine.
-* **[Configuration Guide](docs/configuration.md)** — Reference table of all environment configurations and recommended concurrency parameters.
-* **[Evaluation Harness](docs/evaluation.md)** — Metric definitions, grounding heuristics, and cache-resumption controls.
+- **Deploy it.** There is no public demo. The intended shape is the backend on Fly.io, Qdrant on a
+  small node with a volume, the frontend on Vercel.
+- **Stream the answer.** Synthesis is the dominant latency; streaming moves the user-visible number
+  to time-to-first-token, which is the honest fix for a chat interface.
+- **Parent-document retrieval.** Match on small chunks, then send the enclosing symbol when it fits
+  a token budget — precision of small chunks, context of whole functions.
+- **Zero-downtime re-index** through a collection alias, instead of rebuilding in place.
+- **A larger, independently written evaluation set.** The current 45 answerable questions were
+  model-generated and then hand-corrected against the source; most name the symbol they ask about,
+  which flatters lexical retrieval.
+
+## Documentation
+
+- [Architecture & Design](docs/architecture.md) — chunking invariants, fusion, reranking, the
+  synthesis graph, and what the grounding guarantee does and does not prove.
+- [Evaluation](docs/evaluation.md) — metric definitions, current results, and the reranker
+  measurement.
+- [Configuration](docs/configuration.md) — every environment variable.
+- [Getting Started](docs/getting-started.md) — clean-machine setup, running, checks, teardown.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).

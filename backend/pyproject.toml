@@ -4,25 +4,21 @@ build-backend = "hatchling.build"
 
 [project]
 name = "retrievault"
-version = "0.1.0"
-description = "Production-grade RAG service for the FastAPI codebase"
+version = "0.2.0"
+description = "Citation-backed RAG service over the FastAPI codebase"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi",
     "uvicorn",
     "qdrant-client",
+    # fastembed supplies all three local models (BGE dense, BM25 sparse, the ONNX
+    # cross-encoder), so serving needs no torch, transformers, or optimum.
     "fastembed",
     "langgraph",
     "anthropic",
     "pydantic-settings",
-    "numpy",
-    "tokenizers",
-    "transformers",
-    "optimum",
-    "onnxruntime-directml; sys_platform == 'win32'",
     "onnxruntime; sys_platform != 'win32'",
-    "pytest",
-    "ruff",
+    "onnxruntime-directml; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
@@ -31,13 +27,22 @@ dev = [
     "pytest-asyncio",
     "httpx",
     "ruff",
+]
+# Only the evaluation harness needs the judge stack; the service never imports it.
+eval = [
     "ragas",
     "datasets",
     "langchain-anthropic",
-    "langchain-google-vertexai",
     "langchain-openai",
-    "langchain-community<0.4.0"
+    "langchain-community<0.4.0",
 ]
+
+[tool.uv]
+# fastembed depends on `onnxruntime`. On Windows that wheel would be installed alongside
+# onnxruntime-directml, and both write the same `onnxruntime` import package, so whichever
+# installs last silently decides which providers exist. The override drops the CPU wheel on
+# Windows, leaving exactly one implementation on every platform.
+override-dependencies = ["onnxruntime; sys_platform != 'win32'"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["retrievault"]
@@ -46,6 +51,11 @@ packages = ["retrievault"]
 line-length = 100
 target-version = "py312"
 extend-exclude = ["scratch"]
+
+[tool.ruff.lint]
+# Pinned explicitly: ruff's default rule set changes between releases, and CI must not start
+# failing because a new release added rules to the default.
+select = ["E4", "E7", "E9", "F", "I", "B", "UP", "C4"]
 
 [tool.pytest.ini_options]
 addopts = "-v"

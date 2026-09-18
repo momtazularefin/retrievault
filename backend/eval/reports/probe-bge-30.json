@@ -1,0 +1,462 @@
+{
+  "run": {
+    "date": "2026-09-17T20:15:05Z",
+    "dataset_version": "paraphrase-probe-1.0",
+    "dataset_sha256": "326217dea8d387cc5fb6f928028974e7b85e900742e1716a4383b6a80e0b2840",
+    "index_manifest": {
+      "kind": "manifest",
+      "repo": "fastapi/fastapi",
+      "commit_tag": "0.136.3",
+      "archive_sha256": "8fcc91d75439fdd3384b8a685bc830363aa1a2cd50b48e7a28f46820f835cd84",
+      "chunk_count": 838,
+      "chunker_version": "2",
+      "max_chars": 1400,
+      "embed_model": "BAAI/bge-base-en-v1.5",
+      "sparse_model": "Qdrant/bm25",
+      "acceleration": "none",
+      "indexed_at": "2026-09-17T19:59:41Z"
+    },
+    "synthesis_model": "claude-sonnet-4-6",
+    "judge_provider": "openai",
+    "judge_model": "gpt-4o-mini",
+    "retrieval": {
+      "prefetch_limit": 50,
+      "top_n_fusion": 30,
+      "top_k_rerank": 6
+    },
+    "acceleration": "gpu",
+    "platform": "Windows 11 / Python 3.12.13",
+    "packages": {
+      "ragas": "0.4.3",
+      "fastembed": "0.8.0",
+      "qdrant-client": "1.18.0",
+      "anthropic": "0.109.2",
+      "langgraph": "1.2.5",
+      "onnxruntime": null
+    }
+  },
+  "score": {
+    "mode": "retrieval",
+    "items": 15,
+    "fusion_depth": 30,
+    "top_k": 6,
+    "reranker": "BAAI/bge-reranker-base",
+    "gold_file_hit_at_fusion_depth": 0.9333333333333333,
+    "file": {
+      "fused": {
+        "hit_at_1": 0.4,
+        "hit_at_3": 0.7333333333333333,
+        "hit_at_6": 0.8,
+        "mrr": 0.5722222222222223
+      },
+      "selected": {
+        "hit_at_1": 0.4666666666666667,
+        "hit_at_3": 0.6,
+        "hit_at_6": 0.6,
+        "mrr": 0.5333333333333333
+      }
+    },
+    "symbol": {
+      "fused": {
+        "hit_at_1": 0.3333333333333333,
+        "hit_at_3": 0.4,
+        "hit_at_6": 0.5333333333333333,
+        "mrr": 0.3944444444444445
+      },
+      "selected": {
+        "hit_at_1": 0.4,
+        "hit_at_3": 0.4,
+        "hit_at_6": 0.5333333333333333,
+        "mrr": 0.43333333333333335
+      }
+    },
+    "mean_selected_code_chars": 6208.266666666666,
+    "p50_retrieve_s": 0.10817859999951907,
+    "p50_rerank_s": 8.830272700000933,
+    "rows": [
+      {
+        "id": "p01",
+        "question": "How does FastAPI work out whether an endpoint argument is a dependency, a request body field, or a query parameter?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py"
+        ],
+        "gold_symbols": [
+          "analyze_param"
+        ],
+        "fused_file_rank": 3,
+        "selected_file_rank": 2,
+        "fused_symbol_rank": 4,
+        "selected_symbol_rank": 4,
+        "selected": [
+          "fastapi/security/api_key.py:APIKeyQuery",
+          "fastapi/dependencies/utils.py:get_body_field",
+          "fastapi/security/api_key.py:APIKeyQuery.__init__",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/routing.py:get_request_handler",
+          "fastapi/dependencies/utils.py:analyze_param"
+        ],
+        "selected_code_chars": 5904,
+        "retrieve_s": 0.2756822999981523,
+        "rerank_s": 22.096568800003297
+      },
+      {
+        "id": "p02",
+        "question": "Which argument types are handed to an endpoint directly instead of being validated as request data?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py"
+        ],
+        "gold_symbols": [
+          "add_non_field_param_to_dependency"
+        ],
+        "fused_file_rank": 2,
+        "selected_file_rank": null,
+        "fused_symbol_rank": null,
+        "selected_symbol_rank": null,
+        "selected": [
+          "fastapi/routing.py:get_request_handler",
+          "fastapi/routing.py:get_request_handler",
+          "fastapi/routing.py:APIRoute.__init__",
+          "fastapi/exceptions.py:ValidationException",
+          "fastapi/exceptions.py:EndpointContext",
+          "fastapi/applications.py:FastAPI.__init__"
+        ],
+        "selected_code_chars": 6734,
+        "retrieve_s": 0.2817943000009109,
+        "rerank_s": 9.499457300000358
+      },
+      {
+        "id": "p03",
+        "question": "What actually runs the startup and shutdown handlers registered with the old event decorators?",
+        "gold_files": [
+          "fastapi/routing.py"
+        ],
+        "gold_symbols": [
+          "_DefaultLifespan"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 9,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/routing.py:_DefaultLifespan",
+          "fastapi/routing.py:APIRouter.on_event",
+          "fastapi/applications.py:FastAPI.__init__",
+          "fastapi/routing.py:APIRouter.__init__",
+          "fastapi/applications.py:FastAPI.on_event",
+          "fastapi/routing.py:APIRouter._shutdown"
+        ],
+        "selected_code_chars": 5071,
+        "retrieve_s": 0.21519800000169198,
+        "rerank_s": 9.95862169999964
+      },
+      {
+        "id": "p04",
+        "question": "When one router is mounted inside another, how do their path prefixes and tags combine?",
+        "gold_files": [
+          "fastapi/routing.py"
+        ],
+        "gold_symbols": [
+          "APIRouter.include_router"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/routing.py:APIRouter.include_router",
+          "fastapi/routing.py:APIRouter.include_router",
+          "fastapi/routing.py:APIRouter.__init__",
+          "fastapi/applications.py:FastAPI.include_router",
+          "fastapi/routing.py:APIRouter.add_api_route",
+          "fastapi/routing.py:APIRouter.include_router"
+        ],
+        "selected_code_chars": 7944,
+        "retrieve_s": 0.09318829999756417,
+        "rerank_s": 7.361236100001406
+      },
+      {
+        "id": "p05",
+        "question": "If the same dependency is declared twice while handling one request, does it run twice?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py",
+          "fastapi/dependencies/models.py"
+        ],
+        "gold_symbols": [
+          "solve_dependencies",
+          "Dependant.cache_key"
+        ],
+        "fused_file_rank": 4,
+        "selected_file_rank": null,
+        "fused_symbol_rank": 12,
+        "selected_symbol_rank": null,
+        "selected": [
+          "fastapi/param_functions.py:Security",
+          "fastapi/param_functions.py:Depends",
+          "fastapi/exceptions.py:DependencyScopeError",
+          "fastapi/security/api_key.py:APIKeyQuery.__init__",
+          "fastapi/param_functions.py:Depends",
+          "fastapi/security/oauth2.py:OAuth2PasswordBearer.__init__"
+        ],
+        "selected_code_chars": 5861,
+        "retrieve_s": 0.2118040999994264,
+        "rerank_s": 10.820740099999966
+      },
+      {
+        "id": "p06",
+        "question": "What happens when the value an endpoint returns does not match its declared response model?",
+        "gold_files": [
+          "fastapi/exceptions.py"
+        ],
+        "gold_symbols": [
+          "ResponseValidationError",
+          "ValidationException"
+        ],
+        "fused_file_rank": null,
+        "selected_file_rank": null,
+        "fused_symbol_rank": null,
+        "selected_symbol_rank": null,
+        "selected": [
+          "fastapi/routing.py:APIRoute.__init__",
+          "fastapi/routing.py:get_request_handler",
+          "fastapi/routing.py:APIRouter.post",
+          "fastapi/routing.py:APIRouter.get",
+          "fastapi/routing.py:APIRouter.post",
+          "fastapi/routing.py:APIRouter.head"
+        ],
+        "selected_code_chars": 8103,
+        "retrieve_s": 0.1002812000006088,
+        "rerank_s": 7.58647689999998
+      },
+      {
+        "id": "p07",
+        "question": "How can a key be read out of the query string for authentication, and what is returned when it is absent?",
+        "gold_files": [
+          "fastapi/security/api_key.py"
+        ],
+        "gold_symbols": [
+          "APIKeyQuery",
+          "APIKeyBase"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/api_key.py:APIKeyQuery",
+          "fastapi/security/api_key.py:APIKeyQuery.__init__",
+          "fastapi/security/api_key.py:APIKeyCookie",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.make_not_authenticated_error",
+          "fastapi/security/api_key.py:APIKeyHeader",
+          "fastapi/security/api_key.py:APIKeyBase"
+        ],
+        "selected_code_chars": 5313,
+        "retrieve_s": 0.1049291000017547,
+        "rerank_s": 9.096323500001745
+      },
+      {
+        "id": "p08",
+        "question": "How is an Authorization header split into its scheme and its token?",
+        "gold_files": [
+          "fastapi/security/http.py"
+        ],
+        "gold_symbols": [
+          "HTTPAuthorizationCredentials"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/http.py:HTTPAuthorizationCredentials",
+          "fastapi/security/oauth2.py:OAuth2AuthorizationCodeBearer.__init__",
+          "fastapi/security/http.py:HTTPBearer.__init__",
+          "fastapi/security/oauth2.py:OAuth2PasswordBearer.__init__",
+          "fastapi/security/oauth2.py:OAuth2PasswordBearer.__call__",
+          "fastapi/security/utils.py:get_authorization_scheme_param"
+        ],
+        "selected_code_chars": 5416,
+        "retrieve_s": 0.10344380000242381,
+        "rerank_s": 8.789259299999685
+      },
+      {
+        "id": "p09",
+        "question": "Which status code comes back when the Authorization header is missing for the OpenID Connect scheme?",
+        "gold_files": [
+          "fastapi/security/open_id_connect_url.py"
+        ],
+        "gold_symbols": [
+          "OpenIdConnect"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__init__",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.make_not_authenticated_error",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__call__",
+          "fastapi/security/oauth2.py:OAuth2AuthorizationCodeBearer.__call__",
+          "fastapi/security/oauth2.py:OAuth2AuthorizationCodeBearer.__init__",
+          "fastapi/security/oauth2.py:OAuth2PasswordBearer.__call__"
+        ],
+        "selected_code_chars": 3860,
+        "retrieve_s": 0.10958099999697879,
+        "rerank_s": 4.111767800000962
+      },
+      {
+        "id": "p10",
+        "question": "Why can a parameter taken from the URL never carry a default value?",
+        "gold_files": [
+          "fastapi/params.py"
+        ],
+        "gold_symbols": [
+          "Path"
+        ],
+        "fused_file_rank": 24,
+        "selected_file_rank": null,
+        "fused_symbol_rank": 6,
+        "selected_symbol_rank": null,
+        "selected": [
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/param_functions.py:Form",
+          "fastapi/encoders.py:jsonable_encoder",
+          "fastapi/param_functions.py:Header",
+          "fastapi/datastructures.py:Default"
+        ],
+        "selected_code_chars": 6166,
+        "retrieve_s": 0.09328139999706764,
+        "rerank_s": 9.179763600001024
+      },
+      {
+        "id": "p11",
+        "question": "Do the models that build the OpenAPI document reject fields they do not declare?",
+        "gold_files": [
+          "fastapi/openapi/models.py"
+        ],
+        "gold_symbols": [
+          "BaseModelWithConfig",
+          "Contact"
+        ],
+        "fused_file_rank": 2,
+        "selected_file_rank": null,
+        "fused_symbol_rank": null,
+        "selected_symbol_rank": null,
+        "selected": [
+          "fastapi/routing.py:APIRouter.post",
+          "fastapi/routing.py:APIRouter.options",
+          "fastapi/routing.py:APIRouter.put",
+          "fastapi/routing.py:APIRouter.get",
+          "fastapi/param_functions.py:File",
+          "fastapi/routing.py:APIRouter.patch"
+        ],
+        "selected_code_chars": 7767,
+        "retrieve_s": 0.10817859999951907,
+        "rerank_s": 9.059705899999244
+      },
+      {
+        "id": "p12",
+        "question": "What decides that two dependency calls can share one cached result inside a single request?",
+        "gold_files": [
+          "fastapi/dependencies/models.py"
+        ],
+        "gold_symbols": [
+          "Dependant.cache_key",
+          "Dependant._uses_scopes"
+        ],
+        "fused_file_rank": 13,
+        "selected_file_rank": null,
+        "fused_symbol_rank": 21,
+        "selected_symbol_rank": null,
+        "selected": [
+          "fastapi/param_functions.py:Security",
+          "fastapi/param_functions.py:Depends",
+          "fastapi/dependencies/utils.py:get_dependant",
+          "fastapi/dependencies/utils.py:solve_dependencies",
+          "fastapi/dependencies/utils.py:solve_dependencies",
+          "fastapi/params.py:Depends"
+        ],
+        "selected_code_chars": 6233,
+        "retrieve_s": 0.0729427999976906,
+        "rerank_s": 8.830272700000933
+      },
+      {
+        "id": "p13",
+        "question": "When is a Pydantic model's own fields expanded into separate request parameters?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py"
+        ],
+        "gold_symbols": [
+          "_get_flat_fields_from_params"
+        ],
+        "fused_file_rank": 2,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": null,
+        "selected_symbol_rank": null,
+        "selected": [
+          "fastapi/dependencies/utils.py:request_params_to_args",
+          "fastapi/dependencies/utils.py:request_params_to_args",
+          "fastapi/openapi/utils.py:get_fields_from_routes",
+          "fastapi/applications.py:FastAPI.__init__",
+          "fastapi/encoders.py:jsonable_encoder",
+          "fastapi/routing.py:APIRouter.post"
+        ],
+        "selected_code_chars": 6794,
+        "retrieve_s": 0.0899911999986216,
+        "rerank_s": 8.794226100002561
+      },
+      {
+        "id": "p14",
+        "question": "What happens if an endpoint returns a model built with the old Pydantic v1 API?",
+        "gold_files": [
+          "fastapi/_compat/shared.py",
+          "fastapi/encoders.py"
+        ],
+        "gold_symbols": [
+          "is_pydantic_v1_model_instance",
+          "jsonable_encoder"
+        ],
+        "fused_file_rank": 2,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 2,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/encoders.py:jsonable_encoder",
+          "fastapi/_compat/shared.py:annotation_is_pydantic_v1",
+          "fastapi/_compat/shared.py:is_pydantic_v1_model_class",
+          "fastapi/_compat/shared.py:is_pydantic_v1_model_instance",
+          "fastapi/utils.py:create_model_field",
+          "fastapi/routing.py:APIRouter.post"
+        ],
+        "selected_code_chars": 5326,
+        "retrieve_s": 0.12451209999926505,
+        "rerank_s": 5.9486685999982
+      },
+      {
+        "id": "p15",
+        "question": "Which decorator registers a handler for the TRACE verb?",
+        "gold_files": [
+          "fastapi/routing.py"
+        ],
+        "gold_symbols": [
+          "APIRouter.trace"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 2,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 4,
+        "selected": [
+          "fastapi/applications.py:FastAPI.exception_handler",
+          "fastapi/routing.py:APIRouter.on_event",
+          "fastapi/applications.py:FastAPI.__init__",
+          "fastapi/routing.py:APIRouter.trace",
+          "fastapi/routing.py:APIRouter.trace",
+          "fastapi/routing.py:APIRouter.trace"
+        ],
+        "selected_code_chars": 6632,
+        "retrieve_s": 0.12222449999899254,
+        "rerank_s": 3.339940199999546
+      }
+    ]
+  }
+}

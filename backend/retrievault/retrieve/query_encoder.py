@@ -1,41 +1,9 @@
 from dataclasses import dataclass
 
-import onnxruntime as ort
 from fastembed import SparseTextEmbedding, TextEmbedding
 
 from retrievault.config import get_settings
-
-
-def get_onnx_providers(acceleration: str) -> list[str]:
-    available = ort.get_available_providers()
-    mode = acceleration.lower()
-    
-    if mode == "none":
-        return ["CPUExecutionProvider"]
-        
-    elif mode == "gpu":
-        gpu_providers = [p for p in ["CUDAExecutionProvider", "DirectMLExecutionProvider", "DmlExecutionProvider", "ROCMExecutionProvider"] if p in available]
-        if not gpu_providers:
-            raise RuntimeError(
-                f"GPU acceleration requested, but no GPU provider (CUDA, DirectML, ROCm) "
-                f"is available in ONNX Runtime. Available providers: {available}"
-            )
-        return gpu_providers
-        
-    elif mode == "npu":
-        npu_providers = [p for p in ["DirectMLExecutionProvider", "DmlExecutionProvider", "VitisAIExecutionProvider"] if p in available]
-        if not npu_providers:
-            raise RuntimeError(
-                f"NPU acceleration requested, but no NPU provider (DirectML, VitisAI) "
-                f"is available in ONNX Runtime. Available providers: {available}"
-            )
-        return npu_providers
-        
-    else:
-        raise ValueError(
-            f"Invalid ACCELERATION value: '{acceleration}'. "
-            "Must be 'none', 'gpu', or 'npu'."
-        )
+from retrievault.encoders import load_dense_encoder, load_sparse_encoder
 
 
 @dataclass(frozen=True)
@@ -52,15 +20,17 @@ class QueryEncoder:
         sparse_model: SparseTextEmbedding | None = None,
     ):
         settings = get_settings()
-        providers = get_onnx_providers(settings.acceleration)
-        self._dense = dense_model or TextEmbedding(model_name=settings.embed_model, providers=providers)
-        self._sparse = sparse_model or SparseTextEmbedding(model_name=settings.sparse_model, providers=providers)
+        self._dense = dense_model or load_dense_encoder(settings)
+        self._sparse = sparse_model or load_sparse_encoder(settings)
 
     def encode(self, query: str) -> EncodedQuery:
-        dense_vec = list(self._dense.embed([query]))[0]
-        sparse_vec = list(self._sparse.embed([query]))[0]
+        # query_embed, not embed: fastembed's BM25 weights the query side as plain term presence
+        # (the document side carries the TF saturation and length normalisation), and query
+        # embedding is the documented entry point for BGE queries.
+        dense_vec = next(iter(self._dense.query_embed(query)))
+        sparse_vec = next(iter(self._sparse.query_embed(query)))
         return EncodedQuery(
             dense=dense_vec.tolist(),
             sparse_indices=sparse_vec.indices.tolist(),
-            sparse_values=sparse_vec.values.tolist(),
+            sparse_values=sparse_vec.values.astype(float).tolist(),
         )
