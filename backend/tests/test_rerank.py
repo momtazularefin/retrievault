@@ -1,47 +1,57 @@
-from retrievault.rerank.reranker import rerank
+import pytest
 
-def test_reranker_reorders_known_case(monkeypatch):
-    query = "How to declare a path parameter in FastAPI?"
-
-    class FakeReranker:
-        def predict(self, pairs):
-            return [0.1, 0.95, 0.2]
-
-    monkeypatch.setattr("retrievault.rerank.reranker.get_reranker", lambda: FakeReranker())
-
-    # doc1 is irrelevant, doc2 is highly relevant
-    doc1 = {"id": "1", "code": "def solve_math_problem(a, b):\n    return a + b"}
-    doc2 = {
-        "id": "2",
-        "code": (
-            "from fastapi import FastAPI\n"
-            "app = FastAPI()\n"
-            "@app.get('/items/{item_id}')\n"
-            "def read_item(item_id: int):\n"
-            "    return item_id"
-        ),
-    }
-    doc3 = {"id": "3", "code": "print('Hello world!')"}
-
-    # Pass them in a suboptimal order
-    chunks = [doc1, doc2, doc3]
-
-    reranked = rerank(query, chunks, top_k=2)
-
-    assert len(reranked) == 2
-    # The relevant doc should be pulled to the top
-    assert reranked[0]["id"] == "2"
-    assert "rerank_score" in reranked[0]
-    assert "rerank_score" not in doc2
+from retrievault.rerank.reranker import _sigmoid, rerank
 
 
-def test_reranker_zero_top_k_returns_no_chunks(monkeypatch):
-    class FakeReranker:
-        def predict(self, pairs):
+class FakeCrossEncoder:
+    def __init__(self, logits):
+        self.logits = logits
+        self.documents = None
+
+    def rerank(self, query, documents):
+        self.documents = list(documents)
+        return iter(self.logits)
+
+
+def install(monkeypatch, logits):
+    fake = FakeCrossEncoder(logits)
+    monkeypatch.setattr("retrievault.rerank.reranker.get_reranker", lambda: fake)
+    return fake
+
+
+def test_reranker_orders_by_score_and_keeps_top_k(monkeypatch):
+    install(monkeypatch, [-2.0, 3.0, 0.5])
+    chunks = [{"id": "1", "code": "a"}, {"id": "2", "code": "b"}, {"id": "3", "code": "c"}]
+
+    reranked = rerank("query", chunks, top_k=2)
+
+    assert [c["id"] for c in reranked] == ["2", "3"]
+    assert 0 < reranked[1]["rerank_score"] < reranked[0]["rerank_score"] < 1
+    assert "rerank_score" not in chunks[1], "input chunks are not mutated"
+
+
+def test_reranker_scores_header_text_when_present(monkeypatch):
+    fake = install(monkeypatch, [1.0, 1.0])
+    chunks = [{"code": "def a(): ...", "text": "fastapi/a.py :: a\ndef a(): ..."}, {"code": "b"}]
+
+    rerank("query", chunks, top_k=2)
+
+    assert fake.documents == ["fastapi/a.py :: a\ndef a(): ...", "b"]
+
+
+def test_reranker_zero_top_k_does_not_run_the_model(monkeypatch):
+    class Exploding:
+        def rerank(self, query, documents):
             raise AssertionError("reranker should not run when top_k is zero")
 
-    monkeypatch.setattr("retrievault.rerank.reranker.get_reranker", lambda: FakeReranker())
+    monkeypatch.setattr("retrievault.rerank.reranker.get_reranker", lambda: Exploding())
 
-    chunks = [{"id": "1", "code": "def route(): pass"}]
+    assert rerank("query", [{"code": "x"}], top_k=0) == []
+    assert rerank("query", [], top_k=3) == []
 
-    assert rerank("How does routing work?", chunks, top_k=0) == []
+
+@pytest.mark.parametrize("logit", [-1000.0, -5.0, 0.0, 5.0, 1000.0])
+def test_sigmoid_is_stable_and_bounded(logit):
+    value = _sigmoid(logit)
+    assert 0.0 <= value <= 1.0
+    assert _sigmoid(0.0) == 0.5

@@ -1,6 +1,6 @@
-# retrievault frontend
+# RetrieVault Frontend
 
-Next.js chat UI for the retrievault FastAPI-codebase RAG backend.
+Next.js chat UI for the RetrieVault FastAPI-codebase RAG backend.
 
 ## Local Development
 

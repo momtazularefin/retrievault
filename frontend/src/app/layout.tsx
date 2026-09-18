@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "retrievault",
+  title: "RetrieVault",
   description: "Citation-backed RAG chat for the FastAPI codebase.",
 };
 

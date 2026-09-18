@@ -1,9 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Any
 
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 
+from retrievault.chunker import embedding_text
 from retrievault.collection import COLLECTION_NAME
 from retrievault.config import get_settings
 from retrievault.retrieve.query_encoder import EncodedQuery, QueryEncoder
@@ -20,6 +21,16 @@ class RetrievedChunk:
     end_line: int
     code: str
     github_url: str
+    context: str = ""
+    part: int = 1
+    part_count: int = 1
+
+    @property
+    def text(self) -> str:
+        return embedding_text(self.file_path, self.symbol_name, self.context, self.code)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {**asdict(self), "text": self.text}
 
 
 class HybridSearcher:
@@ -58,36 +69,30 @@ class HybridSearcher:
         fusion: bool,
         vector_name: str | None = None,
     ) -> list[RetrievedChunk]:
+        sparse = models.SparseVector(
+            indices=encoded.sparse_indices,
+            values=encoded.sparse_values,
+        )
         if fusion:
+            prefetch = [
+                models.Prefetch(query=encoded.dense, using="dense", limit=self._prefetch_limit)
+            ]
+            # A query made only of punctuation or stopwords has no BM25 terms to search with.
+            if encoded.sparse_indices:
+                prefetch.append(
+                    models.Prefetch(query=sparse, using="bm25", limit=self._prefetch_limit)
+                )
+            # Qdrant's RRF scores a point as the sum over prefetches of 1 / (k + rank), with
+            # k = 2 and rank counted from 0, so it rewards agreement near the top of both lists.
             response = self._client.query_points(
                 collection_name=self._collection,
-                prefetch=[
-                    models.Prefetch(
-                        query=encoded.dense,
-                        using="dense",
-                        limit=self._prefetch_limit,
-                    ),
-                    models.Prefetch(
-                        query=models.SparseVector(
-                            indices=encoded.sparse_indices,
-                            values=encoded.sparse_values,
-                        ),
-                        using="bm25",
-                        limit=self._prefetch_limit,
-                    ),
-                ],
+                prefetch=prefetch,
                 query=models.FusionQuery(fusion=models.Fusion.RRF),
                 limit=limit,
                 with_payload=True,
             )
         else:
-            if vector_name == "dense":
-                query_vec: Any = encoded.dense
-            else:
-                query_vec = models.SparseVector(
-                    indices=encoded.sparse_indices,
-                    values=encoded.sparse_values,
-                )
+            query_vec: Any = encoded.dense if vector_name == "dense" else sparse
             response = self._client.query_points(
                 collection_name=self._collection,
                 query=query_vec,
@@ -111,4 +116,7 @@ class HybridSearcher:
             end_line=payload["end_line"],
             code=payload["code"],
             github_url=payload.get("github_url", ""),
+            context=payload.get("context", ""),
+            part=payload.get("part", 1),
+            part_count=payload.get("part_count", 1),
         )

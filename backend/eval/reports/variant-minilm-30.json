@@ -1,0 +1,1231 @@
+{
+  "run": {
+    "date": "2026-09-17T20:13:35Z",
+    "dataset_version": "1.1",
+    "dataset_sha256": "dc7a263f6f39d3398b1e33a9c68d4682050332e9eac3564caca0360ab0e2929d",
+    "index_manifest": {
+      "kind": "manifest",
+      "repo": "fastapi/fastapi",
+      "commit_tag": "0.136.3",
+      "archive_sha256": "8fcc91d75439fdd3384b8a685bc830363aa1a2cd50b48e7a28f46820f835cd84",
+      "chunk_count": 838,
+      "chunker_version": "2",
+      "max_chars": 1400,
+      "embed_model": "BAAI/bge-base-en-v1.5",
+      "sparse_model": "Qdrant/bm25",
+      "acceleration": "none",
+      "indexed_at": "2026-09-17T19:59:41Z"
+    },
+    "synthesis_model": "claude-sonnet-4-6",
+    "judge_provider": "openai",
+    "judge_model": "gpt-4o-mini",
+    "retrieval": {
+      "prefetch_limit": 50,
+      "top_n_fusion": 30,
+      "top_k_rerank": 6
+    },
+    "acceleration": "gpu",
+    "platform": "Windows 11 / Python 3.12.13",
+    "packages": {
+      "ragas": "0.4.3",
+      "fastembed": "0.8.0",
+      "qdrant-client": "1.18.0",
+      "anthropic": "0.109.2",
+      "langgraph": "1.2.5",
+      "onnxruntime": null
+    }
+  },
+  "score": {
+    "mode": "retrieval",
+    "items": 45,
+    "fusion_depth": 30,
+    "top_k": 6,
+    "reranker": "Xenova/ms-marco-MiniLM-L-6-v2",
+    "gold_file_hit_at_fusion_depth": 1.0,
+    "file": {
+      "fused": {
+        "hit_at_1": 0.8222222222222222,
+        "hit_at_3": 0.9111111111111111,
+        "hit_at_6": 0.9777777777777777,
+        "mrr": 0.8785185185185185
+      },
+      "selected": {
+        "hit_at_1": 0.7777777777777778,
+        "hit_at_3": 0.9333333333333333,
+        "hit_at_6": 0.9777777777777777,
+        "mrr": 0.8555555555555555
+      }
+    },
+    "symbol": {
+      "fused": {
+        "hit_at_1": 0.8222222222222222,
+        "hit_at_3": 0.9111111111111111,
+        "hit_at_6": 0.9777777777777777,
+        "mrr": 0.8785185185185185
+      },
+      "selected": {
+        "hit_at_1": 0.6666666666666666,
+        "hit_at_3": 0.8888888888888888,
+        "hit_at_6": 0.9777777777777777,
+        "mrr": 0.782962962962963
+      }
+    },
+    "mean_selected_code_chars": 4811.711111111111,
+    "p50_retrieve_s": 0.09911119999742368,
+    "p50_rerank_s": 2.0962196000000404,
+    "rows": [
+      {
+        "id": "b92fa5bb-c9fb-4895-aac0-2661e1009ec6",
+        "question": "What is the `Cookie` class in FastAPI and what base class does it inherit from?",
+        "gold_files": [
+          "fastapi/params.py"
+        ],
+        "gold_symbols": [
+          "Cookie",
+          "Param"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 3,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 3,
+        "selected": [
+          "fastapi/security/oauth2.py:OAuth2",
+          "fastapi/security/api_key.py:APIKeyCookie",
+          "fastapi/params.py:Cookie",
+          "fastapi/routing.py:APIRouter.__init__",
+          "fastapi/security/api_key.py:APIKeyCookie.__init__",
+          "fastapi/exceptions.py:WebSocketException"
+        ],
+        "selected_code_chars": 5343,
+        "retrieve_s": 0.09911119999742368,
+        "rerank_s": 27.47117149999758
+      },
+      {
+        "id": "86e8ffca-d44a-45e4-b935-e4e57c9bc223",
+        "question": "How do you declare a cookie parameter with a default value and a description using FastAPI's `Cookie`?",
+        "gold_files": [
+          "fastapi/param_functions.py",
+          "fastapi/params.py"
+        ],
+        "gold_symbols": [
+          "Cookie"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/param_functions.py:Cookie",
+          "fastapi/param_functions.py:Cookie",
+          "fastapi/param_functions.py:Header",
+          "fastapi/param_functions.py:Cookie",
+          "fastapi/security/api_key.py:APIKeyCookie",
+          "fastapi/param_functions.py:Cookie"
+        ],
+        "selected_code_chars": 6510,
+        "retrieve_s": 0.12964819999979227,
+        "rerank_s": 2.513136099998519
+      },
+      {
+        "id": "61517d46-9909-41f6-90ad-f503676dda0e",
+        "question": "What does the `add_non_field_param_to_dependency` function return when a parameter does not match any of the special non-field types (e.g., Request, Response, BackgroundTasks)?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py"
+        ],
+        "gold_symbols": [
+          "add_non_field_param_to_dependency"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 2,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/dependencies/utils.py:add_non_field_param_to_dependency",
+          "fastapi/dependencies/utils.py:get_dependant",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/dependencies/utils.py:add_param_to_fields",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/applications.py:FastAPI.put"
+        ],
+        "selected_code_chars": 5257,
+        "retrieve_s": 0.10138189999997849,
+        "rerank_s": 2.0048195000017586
+      },
+      {
+        "id": "3b931447-aadc-4f0f-9de5-037a623d10ed",
+        "question": "Which special parameter types does `add_non_field_param_to_dependency` recognize and handle by adding them directly to the dependency model rather than treating them as regular fields?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py"
+        ],
+        "gold_symbols": [
+          "add_non_field_param_to_dependency"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 2,
+        "selected_symbol_rank": 2,
+        "selected": [
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/dependencies/utils.py:add_non_field_param_to_dependency",
+          "fastapi/dependencies/utils.py:get_dependant",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/dependencies/utils.py:add_param_to_fields",
+          "fastapi/dependencies/utils.py:request_params_to_args"
+        ],
+        "selected_code_chars": 5208,
+        "retrieve_s": 0.11454819999926258,
+        "rerank_s": 1.8875590999996348
+      },
+      {
+        "id": "0b9552f0-db93-411b-b294-08197e33f604",
+        "question": "What class does Schema inherit from in FastAPI's OpenAPI models?",
+        "gold_files": [
+          "fastapi/openapi/models.py"
+        ],
+        "gold_symbols": [
+          "Schema",
+          "BaseModelWithConfig"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 6,
+        "selected": [
+          "fastapi/openapi/models.py:MediaType",
+          "fastapi/applications.py:FastAPI.openapi",
+          "fastapi/openapi/models.py:Components",
+          "fastapi/applications.py:FastAPI.__init__",
+          "fastapi/security/oauth2.py:OAuth2",
+          "fastapi/openapi/models.py:Schema"
+        ],
+        "selected_code_chars": 5620,
+        "retrieve_s": 0.11590540000179317,
+        "rerank_s": 2.080711999999039
+      },
+      {
+        "id": "791da633-002c-484b-914c-f4a09ad78d72",
+        "question": "In which module/file is the Schema class defined in FastAPI?",
+        "gold_files": [
+          "fastapi/openapi/models.py"
+        ],
+        "gold_symbols": [
+          "Schema"
+        ],
+        "fused_file_rank": 7,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 9,
+        "selected_symbol_rank": 6,
+        "selected": [
+          "fastapi/openapi/models.py:__module__",
+          "fastapi/params.py:File.__init__",
+          "fastapi/openapi/models.py:Components",
+          "fastapi/applications.py:FastAPI.setup",
+          "fastapi/openapi/constants.py:__module__",
+          "fastapi/openapi/models.py:Schema"
+        ],
+        "selected_code_chars": 3701,
+        "retrieve_s": 0.06965230000059819,
+        "rerank_s": 2.1272181999993336
+      },
+      {
+        "id": "72890948-d3fd-467e-9d13-da81f8d3473a",
+        "question": "What parameters does the `generate_operation_id` function take to generate an operation ID?",
+        "gold_files": [
+          "fastapi/openapi/utils.py"
+        ],
+        "gold_symbols": [
+          "generate_operation_id"
+        ],
+        "fused_file_rank": 6,
+        "selected_file_rank": null,
+        "fused_symbol_rank": 6,
+        "selected_symbol_rank": null,
+        "selected": [
+          "fastapi/applications.py:FastAPI.post",
+          "fastapi/applications.py:FastAPI.put",
+          "fastapi/applications.py:FastAPI.get",
+          "fastapi/applications.py:FastAPI.options",
+          "fastapi/applications.py:FastAPI.patch",
+          "fastapi/applications.py:FastAPI.head"
+        ],
+        "selected_code_chars": 6354,
+        "retrieve_s": 0.0880247999994026,
+        "rerank_s": 1.3202906000005896
+      },
+      {
+        "id": "eca181c4-0384-47d7-b27d-e1af2a8342d9",
+        "question": "How does `generate_operation_id` construct the operation ID string?",
+        "gold_files": [
+          "fastapi/openapi/utils.py",
+          "fastapi/utils.py"
+        ],
+        "gold_symbols": [
+          "generate_operation_id",
+          "generate_operation_id_for_path"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 4,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 5,
+        "selected": [
+          "fastapi/applications.py:FastAPI.put",
+          "fastapi/applications.py:FastAPI.get",
+          "fastapi/applications.py:FastAPI.post",
+          "fastapi/utils.py:generate_unique_id",
+          "fastapi/utils.py:generate_operation_id_for_path",
+          "fastapi/routing.py:APIRouter.put"
+        ],
+        "selected_code_chars": 5016,
+        "retrieve_s": 0.0579580999983591,
+        "rerank_s": 0.9977880000005825
+      },
+      {
+        "id": "96ab7868-6601-4776-af92-5fb678b538bf",
+        "question": "What does the `analyze_param` function in FastAPI's dependency utilities return?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py"
+        ],
+        "gold_symbols": [
+          "analyze_param",
+          "ParamDetails"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/param_functions.py:Security",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/param_functions.py:Depends"
+        ],
+        "selected_code_chars": 5851,
+        "retrieve_s": 0.02458200000182842,
+        "rerank_s": 2.148158100000728
+      },
+      {
+        "id": "87e0154b-1a8b-42d7-80fd-23ffc909143e",
+        "question": "How does `analyze_param` determine whether a parameter in a FastAPI route function is a dependency (using `Depends`) versus a regular request parameter like a query or body parameter?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py"
+        ],
+        "gold_symbols": [
+          "analyze_param"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/param_functions.py:Depends",
+          "fastapi/param_functions.py:Depends"
+        ],
+        "selected_code_chars": 6007,
+        "retrieve_s": 0.0696892999985721,
+        "rerank_s": 1.922486100000242
+      },
+      {
+        "id": "61d45535-a515-4430-b19d-5e430e30dfa9",
+        "question": "How does `APIRouter.include_router` handle prefix combination when including a router that already has its own prefix defined?",
+        "gold_files": [
+          "fastapi/routing.py"
+        ],
+        "gold_symbols": [
+          "APIRouter.include_router"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/routing.py:APIRouter.include_router",
+          "fastapi/routing.py:APIRouter.include_router",
+          "fastapi/applications.py:FastAPI.include_router",
+          "fastapi/routing.py:APIRouter.include_router",
+          "fastapi/applications.py:FastAPI.include_router",
+          "fastapi/routing.py:APIRouter.include_router"
+        ],
+        "selected_code_chars": 7424,
+        "retrieve_s": 0.05854139999792096,
+        "rerank_s": 1.862787300000491
+      },
+      {
+        "id": "4d7be4bf-f72a-4fb9-b606-9ab774340e51",
+        "question": "What happens to tags, dependencies, and responses when a router is included via `APIRouter.include_router`?",
+        "gold_files": [
+          "fastapi/routing.py"
+        ],
+        "gold_symbols": [
+          "APIRouter.include_router"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/routing.py:APIRouter.include_router",
+          "fastapi/routing.py:APIRouter.include_router",
+          "fastapi/applications.py:FastAPI.include_router",
+          "fastapi/applications.py:FastAPI.include_router",
+          "fastapi/routing.py:APIRouter.include_router",
+          "fastapi/routing.py:APIRouter.options"
+        ],
+        "selected_code_chars": 6994,
+        "retrieve_s": 0.10119489999851794,
+        "rerank_s": 1.837277599999652
+      },
+      {
+        "id": "4b352a88-8444-471c-ba4a-e44ca857e312",
+        "question": "What fields does the Link model define in FastAPI's OpenAPI models, and what are their types?",
+        "gold_files": [
+          "fastapi/openapi/models.py"
+        ],
+        "gold_symbols": [
+          "Link"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 2,
+        "selected": [
+          "fastapi/openapi/models.py:OpenIdConnect",
+          "fastapi/openapi/models.py:Link",
+          "fastapi/openapi/utils.py:get_openapi",
+          "fastapi/applications.py:FastAPI.trace",
+          "fastapi/applications.py:FastAPI.options",
+          "fastapi/applications.py:FastAPI.head"
+        ],
+        "selected_code_chars": 7059,
+        "retrieve_s": 0.09422970000014175,
+        "rerank_s": 2.2091749999999593
+      },
+      {
+        "id": "07afeb64-618d-4a90-bf41-39c6cff76966",
+        "question": "What base class does the Link model inherit from in FastAPI's OpenAPI models?",
+        "gold_files": [
+          "fastapi/openapi/models.py"
+        ],
+        "gold_symbols": [
+          "Link",
+          "BaseModelWithConfig"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/openapi/models.py:Link",
+          "fastapi/security/oauth2.py:OAuth2",
+          "fastapi/openapi/models.py:OAuthFlow",
+          "fastapi/openapi/models.py:Response",
+          "fastapi/openapi/models.py:BaseModelWithConfig",
+          "fastapi/openapi/models.py:ExternalDocumentation"
+        ],
+        "selected_code_chars": 1275,
+        "retrieve_s": 0.025355199999467004,
+        "rerank_s": 2.2790815999978804
+      },
+      {
+        "id": "948875f7-77f8-48b7-bf2a-ea7d5dd93c0e",
+        "question": "What fields does the Contact model in FastAPI's OpenAPI models support, and are they required or optional?",
+        "gold_files": [
+          "fastapi/openapi/models.py"
+        ],
+        "gold_symbols": [
+          "Contact"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/openapi/models.py:Contact",
+          "fastapi/openapi/models.py:Schema",
+          "fastapi/openapi/models.py:Schema",
+          "fastapi/openapi/models.py:__module__",
+          "fastapi/openapi/models.py:Schema",
+          "fastapi/openapi/utils.py:_get_openapi_operation_parameters"
+        ],
+        "selected_code_chars": 6142,
+        "retrieve_s": 0.10452240000086022,
+        "rerank_s": 2.043496199999936
+      },
+      {
+        "id": "4d1f0ea7-fcc7-4e25-8212-d7f6319b14b6",
+        "question": "What base class does the Contact model inherit from in FastAPI's OpenAPI models, and what configuration does it use?",
+        "gold_files": [
+          "fastapi/openapi/models.py"
+        ],
+        "gold_symbols": [
+          "Contact",
+          "BaseModelWithConfig"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/openapi/models.py:Contact",
+          "fastapi/security/oauth2.py:OAuth2",
+          "fastapi/openapi/models.py:BaseModelWithConfig",
+          "fastapi/openapi/models.py:Info",
+          "fastapi/openapi/models.py:OpenIdConnect",
+          "fastapi/openapi/models.py:OAuthFlow"
+        ],
+        "selected_code_chars": 1230,
+        "retrieve_s": 0.08801640000092448,
+        "rerank_s": 2.2312462000008964
+      },
+      {
+        "id": "dcfade36-8d4b-46ce-b6d4-e89ae64f271e",
+        "question": "What is the `Depends` class in fastapi/params.py and which fields does it define?",
+        "gold_files": [
+          "fastapi/params.py",
+          "fastapi/param_functions.py"
+        ],
+        "gold_symbols": [
+          "Depends",
+          "Security"
+        ],
+        "fused_file_rank": 6,
+        "selected_file_rank": 3,
+        "fused_symbol_rank": 6,
+        "selected_symbol_rank": 3,
+        "selected": [
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/params.py:Depends",
+          "fastapi/dependencies/utils.py:ParamDetails",
+          "fastapi/dependencies/models.py:Dependant",
+          "fastapi/applications.py:FastAPI.options"
+        ],
+        "selected_code_chars": 4312,
+        "retrieve_s": 0.11969609999869135,
+        "rerank_s": 1.6788387000015064
+      },
+      {
+        "id": "a3a44238-ba15-4365-ad6c-aebac101e2c1",
+        "question": "How does the `use_cache` parameter in FastAPI's `Depends` affect dependency resolution?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py",
+          "fastapi/dependencies/models.py",
+          "fastapi/params.py"
+        ],
+        "gold_symbols": [
+          "solve_dependencies",
+          "Dependant.cache_key",
+          "Depends"
+        ],
+        "fused_file_rank": 2,
+        "selected_file_rank": 4,
+        "fused_symbol_rank": 2,
+        "selected_symbol_rank": 2,
+        "selected": [
+          "fastapi/param_functions.py:Security",
+          "fastapi/param_functions.py:Depends",
+          "fastapi/param_functions.py:Depends",
+          "fastapi/dependencies/utils.py:solve_dependencies",
+          "fastapi/params.py:Depends",
+          "fastapi/param_functions.py:Depends"
+        ],
+        "selected_code_chars": 5600,
+        "retrieve_s": 0.12686890000259154,
+        "rerank_s": 2.0551768000004813
+      },
+      {
+        "id": "ad8787ab-e461-4b50-9ed9-57bef61cceb5",
+        "question": "What is the purpose of the ValidationException class in FastAPI's exceptions module?",
+        "gold_files": [
+          "fastapi/exceptions.py"
+        ],
+        "gold_symbols": [
+          "ValidationException"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 5,
+        "selected": [
+          "fastapi/exceptions.py:RequestValidationError",
+          "fastapi/exceptions.py:ResponseValidationError",
+          "fastapi/exceptions.py:WebSocketRequestValidationError",
+          "fastapi/exceptions.py:HTTPException",
+          "fastapi/exceptions.py:ValidationException",
+          "fastapi/exceptions.py:WebSocketException"
+        ],
+        "selected_code_chars": 4099,
+        "retrieve_s": 0.08413210000071558,
+        "rerank_s": 1.7344504000029701
+      },
+      {
+        "id": "69a0d99d-d672-44ac-a8db-0a05bc39a5d2",
+        "question": "How does the ValidationException class store and expose its errors?",
+        "gold_files": [
+          "fastapi/exceptions.py"
+        ],
+        "gold_symbols": [
+          "ValidationException"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/exceptions.py:ValidationException",
+          "fastapi/exceptions.py:RequestValidationError",
+          "fastapi/exceptions.py:WebSocketRequestValidationError",
+          "fastapi/exceptions.py:ResponseValidationError",
+          "fastapi/exceptions.py:HTTPException",
+          "fastapi/routing.py:get_request_handler"
+        ],
+        "selected_code_chars": 4106,
+        "retrieve_s": 0.10374830000000657,
+        "rerank_s": 1.705527499998425
+      },
+      {
+        "id": "27c75d16-26fc-460b-af1e-902e1783f36e",
+        "question": "What is the ResponseValidationError class in FastAPI and what does it store?",
+        "gold_files": [
+          "fastapi/exceptions.py"
+        ],
+        "gold_symbols": [
+          "ResponseValidationError"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/exceptions.py:ResponseValidationError",
+          "fastapi/exceptions.py:WebSocketRequestValidationError",
+          "fastapi/exceptions.py:RequestValidationError",
+          "fastapi/applications.py:FastAPI.include_router",
+          "fastapi/applications.py:FastAPI.__init__",
+          "fastapi/routing.py:get_request_handler"
+        ],
+        "selected_code_chars": 2709,
+        "retrieve_s": 0.025445299997954862,
+        "rerank_s": 1.443348499997228
+      },
+      {
+        "id": "ffb96055-ba30-4a2b-a8d7-51b6b6f112b9",
+        "question": "What exception does ResponseValidationError inherit from in FastAPI?",
+        "gold_files": [
+          "fastapi/exceptions.py"
+        ],
+        "gold_symbols": [
+          "ResponseValidationError",
+          "ValidationException"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/exceptions.py:ResponseValidationError",
+          "fastapi/exception_handlers.py:__module__",
+          "fastapi/exceptions.py:RequestValidationError",
+          "fastapi/exceptions.py:WebSocketRequestValidationError",
+          "fastapi/applications.py:__module__",
+          "fastapi/exceptions.py:PydanticV1NotSupportedError"
+        ],
+        "selected_code_chars": 2803,
+        "retrieve_s": 0.09868520000236458,
+        "rerank_s": 1.4022750000003725
+      },
+      {
+        "id": "b4ab5d1b-91a2-48ee-b548-a88ff6dcdb8a",
+        "question": "Which names does fastapi/security/oauth2.py import?",
+        "gold_files": [
+          "fastapi/security/oauth2.py"
+        ],
+        "gold_symbols": [
+          "__module__"
+        ],
+        "fused_file_rank": 2,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/oauth2.py:__module__",
+          "fastapi/dependencies/utils.py:__module__",
+          "fastapi/security/oauth2.py:OAuth2PasswordRequestFormStrict",
+          "fastapi/security/oauth2.py:OAuth2.__init__",
+          "fastapi/security/oauth2.py:OAuth2PasswordRequestForm",
+          "fastapi/security/__init__.py:__module__"
+        ],
+        "selected_code_chars": 7995,
+        "retrieve_s": 0.11079160000008414,
+        "rerank_s": 2.0264005999997607
+      },
+      {
+        "id": "28f79267-3385-4070-8bb2-b92eda45b257",
+        "question": "What is the purpose of the fastapi/security/oauth2.py file in the FastAPI framework?",
+        "gold_files": [
+          "fastapi/security/oauth2.py"
+        ],
+        "gold_symbols": [
+          "OAuth2PasswordRequestForm",
+          "OAuth2",
+          "OAuth2PasswordBearer",
+          "SecurityScopes"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/oauth2.py:OAuth2PasswordBearer",
+          "fastapi/security/oauth2.py:OAuth2AuthorizationCodeBearer",
+          "fastapi/security/oauth2.py:OAuth2",
+          "fastapi/security/oauth2.py:SecurityScopes",
+          "fastapi/param_functions.py:Security",
+          "fastapi/security/oauth2.py:OAuth2PasswordRequestForm"
+        ],
+        "selected_code_chars": 5152,
+        "retrieve_s": 0.08963940000103321,
+        "rerank_s": 2.111658099998749
+      },
+      {
+        "id": "a9723567-7b26-418e-a718-190196dada1a",
+        "question": "What is the purpose of the `_DefaultLifespan` class in FastAPI's routing module?",
+        "gold_files": [
+          "fastapi/routing.py"
+        ],
+        "gold_symbols": [
+          "_DefaultLifespan"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/routing.py:_DefaultLifespan",
+          "fastapi/routing.py:APIRouter.include_router",
+          "fastapi/routing.py:APIRouter.__init__",
+          "fastapi/routing.py:APIRouter.__init__",
+          "fastapi/routing.py:APIRouter.__init__",
+          "fastapi/routing.py:APIRouter.__init__"
+        ],
+        "selected_code_chars": 6164,
+        "retrieve_s": 0.09665049999966868,
+        "rerank_s": 1.2860978999997315
+      },
+      {
+        "id": "c414a888-5826-4b2d-862e-7b19e95795a3",
+        "question": "How does `_DefaultLifespan` run startup and shutdown, and what does its `__call__` method return?",
+        "gold_files": [
+          "fastapi/routing.py"
+        ],
+        "gold_symbols": [
+          "_DefaultLifespan"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/routing.py:_DefaultLifespan",
+          "fastapi/routing.py:APIRouter.__init__",
+          "fastapi/routing.py:APIRouter._shutdown",
+          "fastapi/routing.py:APIRouter._startup",
+          "fastapi/routing.py:APIRouter.__init__",
+          "fastapi/applications.py:FastAPI.__init__"
+        ],
+        "selected_code_chars": 5007,
+        "retrieve_s": 0.11928370000168798,
+        "rerank_s": 1.1890230999997584
+      },
+      {
+        "id": "b0b58a5d-50fe-4e12-b4b0-e476d5968c28",
+        "question": "What is the purpose of the `is_pydantic_v1_model_instance` function in FastAPI's compatibility layer?",
+        "gold_files": [
+          "fastapi/_compat/shared.py",
+          "fastapi/encoders.py"
+        ],
+        "gold_symbols": [
+          "is_pydantic_v1_model_instance",
+          "jsonable_encoder"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/_compat/shared.py:is_pydantic_v1_model_instance",
+          "fastapi/_compat/v2.py:__module__",
+          "fastapi/_compat/shared.py:is_pydantic_v1_model_class",
+          "fastapi/exceptions.py:PydanticV1NotSupportedError",
+          "fastapi/_compat/__init__.py:__module__",
+          "fastapi/_compat/shared.py:annotation_is_pydantic_v1"
+        ],
+        "selected_code_chars": 3047,
+        "retrieve_s": 0.09178850000171224,
+        "rerank_s": 1.9111516000011761
+      },
+      {
+        "id": "d80b4ba9-41f6-47e0-a36a-49ca988655a0",
+        "question": "In which file and module of the FastAPI codebase is the `is_pydantic_v1_model_instance` symbol defined?",
+        "gold_files": [
+          "fastapi/_compat/shared.py"
+        ],
+        "gold_symbols": [
+          "is_pydantic_v1_model_instance"
+        ],
+        "fused_file_rank": 5,
+        "selected_file_rank": 2,
+        "fused_symbol_rank": 5,
+        "selected_symbol_rank": 2,
+        "selected": [
+          "fastapi/_compat/v2.py:__module__",
+          "fastapi/_compat/shared.py:is_pydantic_v1_model_instance",
+          "fastapi/utils.py:__module__",
+          "fastapi/_compat/__init__.py:__module__",
+          "fastapi/_compat/shared.py:annotation_is_pydantic_v1",
+          "fastapi/_compat/v2.py:__module__"
+        ],
+        "selected_code_chars": 3218,
+        "retrieve_s": 0.09889590000238968,
+        "rerank_s": 2.3294242000010854
+      },
+      {
+        "id": "4a17b59d-cbe9-441c-9451-519a391c5615",
+        "question": "What parameter does the OpenIdConnect class require during initialization to configure the OpenID Connect discovery endpoint?",
+        "gold_files": [
+          "fastapi/security/open_id_connect_url.py"
+        ],
+        "gold_symbols": [
+          "OpenIdConnect"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect",
+          "fastapi/openapi/models.py:OpenIdConnect",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__init__",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__init__",
+          "fastapi/openapi/models.py:SecuritySchemeType",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__call__"
+        ],
+        "selected_code_chars": 2869,
+        "retrieve_s": 0.09961150000162888,
+        "rerank_s": 2.0962196000000404
+      },
+      {
+        "id": "dc8d930e-5119-482f-924d-114d54ebd493",
+        "question": "What does the OpenIdConnect class return when used as a dependency in a FastAPI route, and what HTTP mechanism does it use to extract credentials?",
+        "gold_files": [
+          "fastapi/security/open_id_connect_url.py"
+        ],
+        "gold_symbols": [
+          "OpenIdConnect"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect",
+          "fastapi/security/http.py:HTTPDigest",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__init__",
+          "fastapi/security/http.py:HTTPBearer",
+          "fastapi/security/api_key.py:APIKeyQuery",
+          "fastapi/security/http.py:HTTPBasic"
+        ],
+        "selected_code_chars": 5137,
+        "retrieve_s": 0.08811880000212113,
+        "rerank_s": 2.2324440000011236
+      },
+      {
+        "id": "b3a7b897-2bce-4868-93d5-4c5d6b8e131f",
+        "question": "What does the `_uses_scopes` property of `Dependant` determine?",
+        "gold_files": [
+          "fastapi/dependencies/models.py"
+        ],
+        "gold_symbols": [
+          "Dependant._uses_scopes"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/dependencies/models.py:Dependant._uses_scopes",
+          "fastapi/dependencies/models.py:Dependant.cache_key",
+          "fastapi/dependencies/models.py:Dependant.oauth_scopes",
+          "fastapi/param_functions.py:Depends",
+          "fastapi/dependencies/utils.py:get_dependant",
+          "fastapi/dependencies/utils.py:get_parameterless_sub_dependant"
+        ],
+        "selected_code_chars": 4220,
+        "retrieve_s": 0.10839140000098269,
+        "rerank_s": 2.1353238000010606
+      },
+      {
+        "id": "d93a54c9-46ae-4210-a269-8d354e6eb3a3",
+        "question": "How is `Dependant._uses_scopes` used when FastAPI caches dependency results?",
+        "gold_files": [
+          "fastapi/dependencies/models.py"
+        ],
+        "gold_symbols": [
+          "Dependant._uses_scopes",
+          "Dependant.cache_key"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 3,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 3,
+        "selected": [
+          "fastapi/param_functions.py:Security",
+          "fastapi/dependencies/utils.py:solve_dependencies",
+          "fastapi/dependencies/models.py:Dependant.cache_key",
+          "fastapi/dependencies/utils.py:get_dependant",
+          "fastapi/dependencies/models.py:Dependant._uses_scopes",
+          "fastapi/security/http.py:HTTPBearer"
+        ],
+        "selected_code_chars": 4965,
+        "retrieve_s": 0.11727759999848786,
+        "rerank_s": 2.1351200999997673
+      },
+      {
+        "id": "53374218-ba80-421f-b38e-b850a89f83fe",
+        "question": "What is the purpose of the APIKeyQuery class in FastAPI's security module?",
+        "gold_files": [
+          "fastapi/security/api_key.py"
+        ],
+        "gold_symbols": [
+          "APIKeyQuery",
+          "APIKeyBase"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/api_key.py:APIKeyQuery",
+          "fastapi/security/api_key.py:APIKeyHeader",
+          "fastapi/security/api_key.py:APIKeyCookie",
+          "fastapi/security/api_key.py:APIKeyQuery.__init__",
+          "fastapi/openapi/models.py:APIKey",
+          "fastapi/security/api_key.py:APIKeyQuery.__init__"
+        ],
+        "selected_code_chars": 4572,
+        "retrieve_s": 0.026238399997964734,
+        "rerank_s": 1.4193416999987676
+      },
+      {
+        "id": "0c3c09de-fe88-41ce-ac60-9b69f9c75af8",
+        "question": "How does APIKeyQuery retrieve the API key from an incoming request in FastAPI?",
+        "gold_files": [
+          "fastapi/security/api_key.py"
+        ],
+        "gold_symbols": [
+          "APIKeyQuery",
+          "APIKeyBase"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/api_key.py:APIKeyQuery",
+          "fastapi/security/api_key.py:APIKeyHeader",
+          "fastapi/security/api_key.py:APIKeyQuery.__call__",
+          "fastapi/security/api_key.py:APIKeyCookie",
+          "fastapi/security/api_key.py:APIKeyHeader.__call__",
+          "fastapi/security/api_key.py:APIKeyCookie.__call__"
+        ],
+        "selected_code_chars": 3191,
+        "retrieve_s": 0.14511809999748948,
+        "rerank_s": 2.2247372999991057
+      },
+      {
+        "id": "29e47ce1-95c6-435b-b008-bf74fa0a8d31",
+        "question": "What does the `_get_flat_fields_from_params` function return when given a list of parameter fields in FastAPI's dependency utilities?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py"
+        ],
+        "gold_symbols": [
+          "_get_flat_fields_from_params"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/dependencies/utils.py:_get_flat_fields_from_params",
+          "fastapi/dependencies/utils.py:get_flat_params",
+          "fastapi/openapi/utils.py:get_fields_from_routes",
+          "fastapi/openapi/utils.py:_get_openapi_operation_parameters",
+          "fastapi/dependencies/utils.py:get_body_field",
+          "fastapi/_compat/v2.py:get_flat_models_from_fields"
+        ],
+        "selected_code_chars": 5004,
+        "retrieve_s": 0.1117314000002807,
+        "rerank_s": 2.464763399999356
+      },
+      {
+        "id": "30ff393f-0bb9-41d5-8771-e5f9d07fc10c",
+        "question": "When does `_get_flat_fields_from_params` expand a model-typed field, and when does it leave fields as they are?",
+        "gold_files": [
+          "fastapi/dependencies/utils.py"
+        ],
+        "gold_symbols": [
+          "_get_flat_fields_from_params"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/dependencies/utils.py:_get_flat_fields_from_params",
+          "fastapi/openapi/utils.py:get_fields_from_routes",
+          "fastapi/dependencies/utils.py:get_flat_params",
+          "fastapi/_compat/v2.py:get_flat_models_from_field",
+          "fastapi/_compat/v2.py:get_flat_models_from_fields",
+          "fastapi/openapi/utils.py:_get_openapi_operation_parameters"
+        ],
+        "selected_code_chars": 4464,
+        "retrieve_s": 0.0960226999995939,
+        "rerank_s": 2.380471899999975
+      },
+      {
+        "id": "17ee28a8-b588-400d-a7e1-dea3178750b6",
+        "question": "What is the HTTPAuthorizationCredentials class and what fields does it contain in FastAPI's HTTP security module?",
+        "gold_files": [
+          "fastapi/security/http.py"
+        ],
+        "gold_symbols": [
+          "HTTPAuthorizationCredentials"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 2,
+        "selected": [
+          "fastapi/security/http.py:HTTPBearer",
+          "fastapi/security/http.py:HTTPAuthorizationCredentials",
+          "fastapi/security/http.py:HTTPDigest",
+          "fastapi/security/http.py:HTTPBasicCredentials",
+          "fastapi/security/http.py:HTTPBasic",
+          "fastapi/security/http.py:HTTPBearer.__call__"
+        ],
+        "selected_code_chars": 4749,
+        "retrieve_s": 0.09543570000096224,
+        "rerank_s": 2.0924410999978136
+      },
+      {
+        "id": "5b61fe47-183e-4d43-818d-852cb36944ee",
+        "question": "How does FastAPI represent the parsed components of an HTTP Authorization header through the HTTPAuthorizationCredentials model?",
+        "gold_files": [
+          "fastapi/security/http.py"
+        ],
+        "gold_symbols": [
+          "HTTPAuthorizationCredentials"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/http.py:HTTPAuthorizationCredentials",
+          "fastapi/security/http.py:HTTPBearer.__call__",
+          "fastapi/security/http.py:HTTPDigest.__call__",
+          "fastapi/security/http.py:HTTPBase",
+          "fastapi/security/http.py:HTTPDigest",
+          "fastapi/security/http.py:HTTPBasic.__call__"
+        ],
+        "selected_code_chars": 5467,
+        "retrieve_s": 0.09271499999886146,
+        "rerank_s": 1.3512972999997146
+      },
+      {
+        "id": "96a1b4e4-b988-4f02-b2ed-fdfcba160918",
+        "question": "Which names does fastapi/security/open_id_connect_url.py import?",
+        "gold_files": [
+          "fastapi/security/open_id_connect_url.py"
+        ],
+        "gold_symbols": [
+          "__module__"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/open_id_connect_url.py:__module__",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__init__",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__init__",
+          "fastapi/security/oauth2.py:__module__",
+          "fastapi/security/http.py:__module__"
+        ],
+        "selected_code_chars": 3559,
+        "retrieve_s": 0.1036536999999953,
+        "rerank_s": 2.6689389999992272
+      },
+      {
+        "id": "40ff62e9-d926-4f6c-90f3-c28ad1384267",
+        "question": "What is the purpose of the fastapi/security/open_id_connect_url.py module in FastAPI?",
+        "gold_files": [
+          "fastapi/security/open_id_connect_url.py"
+        ],
+        "gold_symbols": [
+          "OpenIdConnect"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__init__",
+          "fastapi/security/open_id_connect_url.py:__module__",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__init__",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.__call__",
+          "fastapi/security/open_id_connect_url.py:OpenIdConnect.make_not_authenticated_error"
+        ],
+        "selected_code_chars": 3125,
+        "retrieve_s": 0.6792816999986826,
+        "rerank_s": 4.301364200000535
+      },
+      {
+        "id": "4c703c4e-3362-49f1-b411-8c99b727532a",
+        "question": "What is the `Path` class in FastAPI's `params.py` and what is it used for?",
+        "gold_files": [
+          "fastapi/params.py"
+        ],
+        "gold_symbols": [
+          "Path",
+          "Param"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 2,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 2,
+        "selected": [
+          "fastapi/applications.py:FastAPI.options",
+          "fastapi/params.py:Path",
+          "fastapi/params.py:ParamTypes",
+          "fastapi/routing.py:APIRouter.options",
+          "fastapi/dependencies/utils.py:analyze_param",
+          "fastapi/routing.py:APIRouter.trace"
+        ],
+        "selected_code_chars": 3386,
+        "retrieve_s": 0.5416340000010678,
+        "rerank_s": 4.3250790999991295
+      },
+      {
+        "id": "24c534b7-916f-4af1-9aa5-625a9f474bb8",
+        "question": "How does the `Path` parameter class differ from the `Query` class in fastapi/params.py?",
+        "gold_files": [
+          "fastapi/params.py"
+        ],
+        "gold_symbols": [
+          "Path",
+          "Query"
+        ],
+        "fused_file_rank": 2,
+        "selected_file_rank": 2,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/param_functions.py:Path",
+          "fastapi/params.py:ParamTypes",
+          "fastapi/openapi/models.py:ParameterInType",
+          "fastapi/param_functions.py:Query",
+          "fastapi/params.py:Path",
+          "fastapi/applications.py:FastAPI.options"
+        ],
+        "selected_code_chars": 4171,
+        "retrieve_s": 0.12274930000057793,
+        "rerank_s": 4.865352199998597
+      },
+      {
+        "id": "06ffcfcc-5aa0-4a2c-aed6-926ccc7045f5",
+        "question": "What is the `Path` function in FastAPI and what is it used for?",
+        "gold_files": [
+          "fastapi/param_functions.py"
+        ],
+        "gold_symbols": [
+          "Path"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 2,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 2,
+        "selected": [
+          "fastapi/applications.py:FastAPI.put",
+          "fastapi/param_functions.py:Path",
+          "fastapi/routing.py:APIRouter.get",
+          "fastapi/routing.py:APIRouter.options",
+          "fastapi/param_functions.py:Depends",
+          "fastapi/param_functions.py:Path"
+        ],
+        "selected_code_chars": 6138,
+        "retrieve_s": 0.49290629999813973,
+        "rerank_s": 4.227320300000429
+      },
+      {
+        "id": "dfd27274-9671-407d-8cc3-5aa670cef616",
+        "question": "How does the `Path` function differ from using a plain type annotation for path parameters in FastAPI?",
+        "gold_files": [
+          "fastapi/param_functions.py",
+          "fastapi/dependencies/utils.py"
+        ],
+        "gold_symbols": [
+          "Path",
+          "analyze_param"
+        ],
+        "fused_file_rank": 2,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 2,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/param_functions.py:Path",
+          "fastapi/param_functions.py:Path",
+          "fastapi/param_functions.py:Header",
+          "fastapi/datastructures.py:UploadFile",
+          "fastapi/param_functions.py:File",
+          "fastapi/param_functions.py:Path"
+        ],
+        "selected_code_chars": 7709,
+        "retrieve_s": 0.08587819999956992,
+        "rerank_s": 4.713902700001199
+      },
+      {
+        "id": "5904d605-775e-4411-925c-d6e80fb13f53",
+        "question": "What HTTP method does the `APIRouter.trace` decorator register a route for in FastAPI?",
+        "gold_files": [
+          "fastapi/routing.py"
+        ],
+        "gold_symbols": [
+          "APIRouter.trace"
+        ],
+        "fused_file_rank": 1,
+        "selected_file_rank": 1,
+        "fused_symbol_rank": 1,
+        "selected_symbol_rank": 1,
+        "selected": [
+          "fastapi/routing.py:APIRouter.trace",
+          "fastapi/routing.py:APIRouter.trace",
+          "fastapi/routing.py:APIRouter.trace",
+          "fastapi/routing.py:APIRouter.trace",
+          "fastapi/routing.py:APIRouter.websocket",
+          "fastapi/routing.py:APIRouter.trace"
+        ],
+        "selected_code_chars": 4598,
+        "retrieve_s": 0.47873880000042845,
+        "rerank_s": 4.589182200001233
+      }
+    ]
+  }
+}
